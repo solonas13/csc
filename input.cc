@@ -122,7 +122,7 @@ void usage ( void )
    fprintf ( stdout, "  -a, --alphabet            <str>     `DNA' for nucleotide  sequences or `PROT'\n"
                      "                                      for protein  sequences. \n" );
    fprintf ( stdout, "  -i, --input-file          <str>     (Multi)FASTA input filename.\n" );
-   fprintf ( stdout, "  -o, --output-file         <str>     Output filename.\n" );
+   fprintf ( stdout, "  -o, --output-file         <str>     Output filename for the rotated sequences.\n" );
    fprintf ( stdout, "  -q, --q-length            <int>     The q-gram length.\n");
    fprintf ( stdout, "  -b, --num-blocks          <int>     The number of blocks.\n");
  }
