@@ -30,6 +30,7 @@ int main(int argc, char **argv)
 	struct TSwitch  sw;
 
 	FILE *          in_fd;                  // the input file descriptor
+	FILE *          out_fd;                  // the input file descriptor
         char *          input_filename;         // the input file name
         char *          output_filename;        // the output file name
         unsigned char ** seq    = NULL;         	// the sequence in memory
@@ -173,20 +174,36 @@ int main(int argc, char **argv)
 		return ( 1 );
 	}
 
-	TPOcc ** D;
-	if ( ( D = ( TPOcc ** ) calloc ( ( num_seqs ) , sizeof( TPOcc * ) ) ) == NULL )
+
+	unsigned int m = strlen ( ( char * ) seq[0] );
+	unsigned int n = strlen ( ( char * ) seq[1] );
+
+	if ( sw . b < 1 || sw . b > m - sw . q + 1  || sw . b > m - sw . q + 1 )
 	{
-		fprintf( stderr, " Error: Cannot allocate memory!\n" );
-		exit( EXIT_FAILURE );
+        	fprintf( stderr, " Error: Illegal number of blocks.\n" );
+		return ( 1 );
 	}
-	for ( int i = 0; i < num_seqs; i++ )
+
+	if ( sw . q >= m || sw . q >= n )
 	{
-		if ( ( D[i] = ( TPOcc * ) calloc ( ( num_seqs ) , sizeof( TPOcc ) ) ) == NULL )
-		{
-			fprintf( stderr, " Error: Cannot allocate memory!\n" );
-			exit( EXIT_FAILURE );
-		}
+        	fprintf( stderr, " Error: Illegal q-gram length.\n" );
+		return ( 1 );
 	}
+
+	if ( num_seqs > 2 )
+	{
+        	fprintf( stderr, " Warning: %d sequences were read from file %s.\n", num_seqs, input_filename );
+        	fprintf( stderr, " Warning: Only the first two (%s, %s) will be processed!\n", seq_id[0], seq_id[1] );
+	}
+	
+	unsigned int distance = m + n;
+	unsigned int rotation = 0;
+	circular_sequence_comparison ( seq[0], seq[1], sw, &rotation, &distance );
+	TPOcc D;
+	D . err = distance;
+	D . rot = rotation;
+
+	#if 0
 	for ( int i = 0; i < num_seqs; i++ )
 	{
 		unsigned int m = strlen ( ( char * ) seq[i] );
@@ -207,17 +224,33 @@ int main(int argc, char **argv)
 			D[i][j] . rot = rotation;
 		}
 	}
-
+	#endif
 
 	double end = gettime();
 
-        fprintf( stderr, "Elapsed time for comparing %d sequence(s): %lf secs\n", num_seqs, ( end - start ) );
+	if ( ! ( out_fd = fopen ( output_filename, "w") ) )
+	{
+		fprintf ( stderr, " Error: Cannot open file %s!\n", output_filename );
+		return ( 1 );
+	}
 
-	for ( i = 0; i < num_seqs; i ++ )
-        {
-        	free ( D[i] );
-        }
-        free ( D );
+	unsigned char * rot_str = ( unsigned char * ) calloc ( m + 1, sizeof ( unsigned char ) );
+	create_rotation ( seq[0], D . rot, rot_str );
+	fprintf( out_fd, ">%s\n", seq_id[0] );
+	fprintf( out_fd, "%s\n", rot_str );
+	free ( rot_str );
+	fprintf( out_fd, ">%s\n", seq_id[1] );
+	fprintf( out_fd, "%s\n", seq[1] );
+
+	if ( fclose ( out_fd ) )
+	{
+		fprintf( stderr, " Error: file close error!\n");
+		return ( 1 );
+	}
+        fprintf( stderr, " Blockwise q-gram distance: %d\n", ( int ) D . err );
+        fprintf( stderr, " Rotation                 : %d\n", D . rot );
+        fprintf( stderr, " (Multi)FASTA output file : %s\n", sw . output_filename );
+        fprintf( stderr, "Elapsed time for comparing sequences: %lf secs\n", ( end - start ) );
 
 	/* De-allocate */
         for ( i = 0; i < num_seqs; i ++ )

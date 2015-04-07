@@ -59,3 +59,4 @@ void usage ( void );
 unsigned int LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * LCP );
 void partitioning ( INT i, INT j, INT f, INT m, INT * mf, INT * ind );
 unsigned int circular_sequence_comparison (  unsigned char * x, unsigned char * y, struct TSwitch  sw, unsigned int * rotation, unsigned int * distance );
+unsigned int create_rotation ( unsigned char * x, unsigned int offset, unsigned char * rotation );

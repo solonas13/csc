@@ -295,7 +295,8 @@ unsigned int circular_sequence_comparison (  unsigned char * x, unsigned char * 
 			min_dist = dist;
 		}
 	}
-	fprintf ( stderr, "(%d %d) ", min_dist, rot );
+	( * distance ) = min_dist; 
+	( * rotation ) = rot;
 
 	/* De-allocate the memory */	
 	free ( D );
@@ -332,4 +333,13 @@ void partitioning ( INT i, INT j, INT f, INT m, INT * mf, INT * ind )
 	}
 	ind[j + i * f] = first;
 	mf[j + i * f] = last - first + 1;
+}
+
+unsigned int create_rotation ( unsigned char * x, unsigned int offset, unsigned char * rotation )
+{
+	unsigned int m = strlen ( ( char * ) x );
+	memmove ( &rotation[0], &x[offset], m - offset );
+	memmove ( &rotation[m - offset], &x[0], offset );
+	rotation[m] = '\0';
+	return 1;
 }
