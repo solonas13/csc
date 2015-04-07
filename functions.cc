@@ -139,6 +139,7 @@ unsigned int circular_sequence_comparison (  unsigned char * x, unsigned char * 
 	/* Ranking of q-grams and creation of x' and y' */
 	int b = sw . b;
 	int q = sw . q;
+
 	//fprintf(stderr, " %d %d.\n", b, q );
 	int sigma = 0;
         INT mm = m + m - q + 1; 
@@ -160,7 +161,7 @@ unsigned int circular_sequence_comparison (  unsigned char * x, unsigned char * 
         //fprintf(stderr, " SA[0]: %d.\n", SA[0] );
 
 	/* Loop through the LCP array to rank the rest q-grams in the suffix array */	
-	for ( INT i = 1; i < mmn; i++ )
+	for ( INT i = 1; i <= mmn - q; i++ )
 	{
 		INT lcp = LCP[i];
 		INT ii = SA[i];
@@ -225,25 +226,19 @@ unsigned int circular_sequence_comparison (  unsigned char * x, unsigned char * 
 	diff = ( INT ** ) calloc ( b, sizeof ( INT * ) );
 	for ( INT i = 0; i < b; i++ )	diff[i] = ( INT * ) calloc ( sigma + 1, sizeof ( INT ) );
 
-	/* Allocate the Parikh Vector for y */
-	INT ** pvy;
-	pvy = ( INT ** ) calloc ( b, sizeof ( INT * ) );
-	for ( INT i = 0; i < b; i++ )	pvy[i] = ( INT * ) calloc ( sigma + 1, sizeof ( INT ) );
-
-	/* Step 2: Create diff, pvy, and D_0 */
+	/* Step 1: Create diff, pvy, and D_0 */
 	INT * D;
 	D = ( INT * ) calloc ( b, sizeof ( INT * ) );
 	for ( INT i = 0; i < b; i++ )
 	{
 		for ( INT j = yind[i]; j < yind[i] + ymf[i]; j++ )
 		{
-			pvy[i][yp[j]]++;	
 			diff[i][yp[j]]++;	
 			D[i]++;
 		}
 	}	
 
-	/* Step 3: Compute the distances */
+	/* Step 2: Compute the distances for position 0 */
 	int min_dist = 0;
 	for ( INT i = 0; i < b; i++ )	//first window
 	{	
@@ -261,18 +256,20 @@ unsigned int circular_sequence_comparison (  unsigned char * x, unsigned char * 
 		}
 		min_dist += D[i];
 	}
-	fprintf ( stderr, "D0 = %d\n", min_dist );
+	//fprintf ( stderr, "D0 = %d\n", min_dist );
 
+	/* Step 3: Compute the rest of the distances */
 	int rot = 0;
 	for ( INT i = 1; i < m; i++ )	//all the rest windows
 	{
 		int dist = 0;
 		for ( INT j = 0; j < b; j++ )
 		{
-			diff[j][xp[i - 1 + xind[j]]]--;
-			diff[j][xp[i - 1 + xind[j] + xmf[j]]]++;
+			diff[j][xp[i - 1 + xind[j]]]++; //letter out
+			diff[j][xp[i - 1 + xind[j] + xmf[j]]]--; //letter in
 
-			if ( diff[j][xp[i - 1 + xind[j]]] >= 0 )	
+			//For the letter we take out
+			if ( diff[j][xp[i - 1 + xind[j]]] <= 0 )	
 			{
 				D[j]--;
 			}
@@ -281,17 +278,17 @@ unsigned int circular_sequence_comparison (  unsigned char * x, unsigned char * 
 				D[j]++;
 			}
 
-			if ( diff[j][xp[i - 1 + xind[j] + xmf[j]]] <= 0 )	
+			//For the letter we add in
+			if ( diff[j][xp[i - 1 + xind[j] + xmf[j]]] < 0 )	
 			{
-				D[j]--;
+				D[j]++;
 			}
 			else
 			{							
-				D[j]++;
+				D[j]--;
 			}
 			dist += D[j];
 		}
-		fprintf ( stderr, "D%d = %d\n", i, dist );
 		if ( dist < min_dist )
 		{
 			rot = i;
@@ -314,8 +311,6 @@ unsigned int circular_sequence_comparison (  unsigned char * x, unsigned char * 
 	free ( LCP );
 	for ( INT i = 0; i < b; i++ )	free ( diff[i] );
 	free ( diff );
-	for ( INT i = 0; i < b; i++ )	free ( pvy[i] );
-	free ( pvy );
 	return ( 1 );
 }
 
