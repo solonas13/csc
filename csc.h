@@ -1,6 +1,6 @@
 /**
-    MAW: Minimal Absent Words
-    Copyright (C) 2014 Alice Heliou and Solon P. Pissis. 
+    CSC: Circular Sequence Comparison
+    Copyright (C) 2015 Solon P. Pissis. 
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
