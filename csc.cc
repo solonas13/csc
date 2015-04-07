@@ -178,7 +178,7 @@ int main(int argc, char **argv)
 	unsigned int m = strlen ( ( char * ) seq[0] );
 	unsigned int n = strlen ( ( char * ) seq[1] );
 
-	if ( sw . b < 1 || sw . b > m - sw . q + 1  || sw . b > m - sw . q + 1 )
+	if ( sw . b < 1 || sw . b > m - sw . q + 1  || sw . b > n - sw . q + 1 )
 	{
         	fprintf( stderr, " Error: Illegal number of blocks.\n" );
 		return ( 1 );
