@@ -198,7 +198,16 @@ int main(int argc, char **argv)
 	
 	unsigned int distance = m + n;
 	unsigned int rotation = 0;
+
+	#if 0
+	for ( sw . b = 500; sw . b <= 1500; sw . b++ )
+	{	
+		circular_sequence_comparison ( seq[0], seq[1], sw, &rotation, &distance );
+	}
+	#endif
+
 	circular_sequence_comparison ( seq[0], seq[1], sw, &rotation, &distance );
+
 	TPOcc D;
 	D . err = distance;
 	D . rot = rotation;
@@ -247,6 +256,11 @@ int main(int argc, char **argv)
 		fprintf( stderr, " Error: file close error!\n");
 		return ( 1 );
 	}
+        fprintf( stderr, " Seq x id is %s and its length is %d\n", seq_id[0], m );
+        fprintf( stderr, " Seq y id is %s and its length is %d\n", seq_id[1], n );
+        fprintf( stderr, " q-gram length is %d\n", sw . q );
+        fprintf( stderr, " Number of blocks is %d\n", sw . b );
+        fprintf( stderr, " Block length is %d\n", m / sw . b );
         fprintf( stderr, " Blockwise q-gram distance: %d\n", ( int ) D . err );
         fprintf( stderr, " Rotation                 : %d\n", D . rot );
         fprintf( stderr, " (Multi)FASTA output file : %s\n", sw . output_filename );
