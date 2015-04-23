@@ -23,6 +23,8 @@
 #include <string.h>
 #include <sys/time.h>
 #include "csc.h"
+#include "hcsc.h"
+#include "ncsc.h"
 
 int main(int argc, char **argv)
 {
@@ -30,26 +32,36 @@ int main(int argc, char **argv)
 	struct TSwitch  sw;
 
 	FILE *          in_fd;                  // the input file descriptor
-	FILE *          out_fd;                  // the input file descriptor
+	FILE *          out_fd;                 // the input file descriptor
         char *          input_filename;         // the input file name
         char *          output_filename;        // the output file name
-        unsigned char ** seq    = NULL;         	// the sequence in memory
-        unsigned char ** seq_id = NULL;         	// the sequence id in memory
+        char *          method;
+        unsigned char ** seq    = NULL;         // the sequence in memory
+        unsigned char ** seq_id = NULL;         // the sequence id in memory
 	char *          alphabet;               // the alphabet
 	unsigned int    i, j;
-	unsigned int    b, q;	
+	unsigned int    b, q;
 
 	/* Decodes the arguments */
         i = decode_switches ( argc, argv, &sw );
 
 	/* Check the arguments */
-        if ( i < 9 )
+        if ( i < 10 )
         {
                 usage ();
                 return ( 1 );
         }
         else
         {
+                if      ( ! strcmp ( METHOD_H, sw . method ) )   method = ( char * ) METHOD_H;
+                else if ( ! strcmp ( METHOD_N, sw . method ) )   method = ( char * ) METHOD_N;
+                else if ( ! strcmp ( METHOD_SA, sw . method ) )  method = ( char * ) METHOD_SA;
+		else
+		{
+                        fprintf ( stderr, " Error: Method argument should be `hCSC', `nCSC' or `saCSC' for heuristic, naive or suffix-array Circular String Comparison.\n" );
+                        return ( 1 );
+		}
+
                 if      ( ! strcmp ( "DNA", sw . alphabet ) )   alphabet = ( char * ) DNA;
                 else if ( ! strcmp ( "PROT", sw . alphabet ) )  alphabet = ( char * ) PROT;
                 else
@@ -195,13 +207,64 @@ int main(int argc, char **argv)
         	fprintf( stderr, " Warning: %d sequences were read from file %s.\n", num_seqs, input_filename );
         	fprintf( stderr, " Warning: Only the first two (%s, %s) will be processed!\n", seq_id[0], seq_id[1] );
 	}
-	
+
 	unsigned int distance = m + n;
 	unsigned int rotation = 0;
-	circular_sequence_comparison ( seq[0], seq[1], sw, &rotation, &distance );
+
+
+	/* Run the algorithm using the user's chosen method */
 	TPOcc D;
-	D . err = distance;
-	D . rot = rotation;
+	if (strcmp ( method, METHOD_SA ) == 0 )
+	{
+		circular_sequence_comparison ( seq[0], seq[1], sw, &rotation, &distance );
+		D . err = distance;
+		D . rot = rotation;
+	} else {
+		string xx ( ( char * ) seq[0] );
+		xx = xx + xx;
+		string y ( ( char * ) seq[1] );
+		string alphabet = "";
+		if ( strcmp ( sw . alphabet, ALPHABET_DNA ) == 0 )
+		{
+			if ( seq[0][0] < 'a' ) {
+				alphabet = DNA;
+			} else {
+				alphabet = DNA_LC;
+			}
+		}
+		else if ( strcmp ( sw. alphabet, ALPHABET_PROT ) == 0 )
+		{
+			if ( seq[0][0] < 'a' ) {
+				alphabet = PROT;
+			} else {
+				alphabet = PROT_LC;
+			}
+		}
+		else if ( strcmp ( sw. alphabet, ALPHABET_IUPAC ) == 0 )
+		{
+			if ( seq[0][0] < 'a' ) {
+				alphabet = IUPAC;
+			} else {
+				alphabet = IUPAC_LC;
+			}
+		}
+
+		//run the heuristic or naive algorithm
+		struct BestMatch bm;
+		if ( strcmp ( method, METHOD_H ) == 0 )
+		{
+			hCSC hcsc ( xx, 2 * m, y, n, sw . q, sw . b, alphabet );
+			hcsc . run ( &bm );
+		}
+		else if ( strcmp ( method, METHOD_N ) == 0 )
+		{
+			nCSC ncsc ( xx, 2 * m, y, n, sw . q, sw . b, alphabet );
+			ncsc . run ( &bm );
+		}
+
+		D . err = bm . score;
+		D . rot = bm . pos;
+	}
 
 	#if 0
 	for ( int i = 0; i < num_seqs; i++ )

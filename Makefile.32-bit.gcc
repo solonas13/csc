@@ -8,9 +8,9 @@ LFLAGS= -std=c++11 -O3 -DNDEBUG -I ./libsdsl/include/ -L ./libsdsl/lib/ -lsdsl -
  
 EXE=    csc
  
-SRC=    csc.cc input.cc functions.cc
+SRC=    csc.cc hcsc.cc ncsc.cc input.cc functions.cc
  
-HD=     csc.h Makefile.32-bit.gcc
+HD=     csc.h qcsc.h hcsc.h ncsc.h Makefile.32-bit.gcc
  
 # 
 # No need to edit below this line 
