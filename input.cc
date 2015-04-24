@@ -26,6 +26,7 @@
 
 static struct option long_options[] =
  {
+   { "method",                  required_argument, NULL, 'm' },
    { "alphabet",                required_argument, NULL, 'a' },
    { "input-file",              required_argument, NULL, 'i' },
    { "output-file",             required_argument, NULL, 'o' },
@@ -51,14 +52,21 @@ int decode_switches ( int argc, char * argv [], struct TSwitch * sw )
    sw -> alphabet                       = NULL;
    sw -> input_filename                 = NULL;
    sw -> output_filename                = NULL;
+   sw -> method                         = NULL;
    sw -> q                              = 5;
    sw -> b				= 10;
    args = 0;
 
-   while ( ( opt = getopt_long ( argc, argv, "a:i:o:q:b:h", long_options, &oi ) ) != - 1 )
+   while ( ( opt = getopt_long ( argc, argv, "m:a:i:o:q:b:h", long_options, &oi ) ) != - 1 )
     {
       switch ( opt )
        {
+	case 'm':
+           sw -> method = ( char * ) malloc ( ( strlen ( optarg ) + 1 ) * sizeof ( char ) );
+           strcpy ( sw -> method, optarg );
+           args ++;
+           break;
+	 
          case 'a':
            sw -> alphabet = ( char * ) malloc ( ( strlen ( optarg ) + 1 ) * sizeof ( char ) );
            strcpy ( sw -> alphabet, optarg );
@@ -102,7 +110,7 @@ int decode_switches ( int argc, char * argv [], struct TSwitch * sw )
        }
     }
 
-   if ( args < 5 )
+   if ( args < 6 )
      {
        usage ();
        exit ( 1 );
@@ -119,6 +127,8 @@ void usage ( void )
  {
    fprintf ( stdout, " Usage: csc <options>\n" );
    fprintf ( stdout, " Standard (Mandatory):\n" );
+   fprintf ( stdout, "  -m, --method              <str>     `hCSC' for heuristic, `nCSC' for naive\n"
+                     "                                      and `saCSC' for suffix-array algorithm. \n" );
    fprintf ( stdout, "  -a, --alphabet            <str>     `DNA' for nucleotide  sequences or `PROT'\n"
                      "                                      for protein  sequences. \n" );
    fprintf ( stdout, "  -i, --input-file          <str>     (Multi)FASTA input filename.\n" );
@@ -126,3 +136,4 @@ void usage ( void )
    fprintf ( stdout, "  -q, --q-length            <int>     The q-gram length.\n");
    fprintf ( stdout, "  -b, --num-blocks          <int>     The number of blocks.\n");
  }
+

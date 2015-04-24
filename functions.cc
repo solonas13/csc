@@ -295,8 +295,8 @@ unsigned int circular_sequence_comparison (  unsigned char * x, unsigned char * 
 			min_dist = dist;
 		}
 	}
-	( * distance ) = min_dist; 
-	( * rotation ) = rot;
+	( * distance ) = ( unsigned int ) min_dist; 
+	( * rotation ) = ( unsigned int ) rot;
 
 	/* De-allocate the memory */	
 	free ( D );

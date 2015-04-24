@@ -1,0 +1,7 @@
+*.o
+csc
+/Makefile
+in.fasta
+out.fasta
+libsdsl
+sdsl-lite
