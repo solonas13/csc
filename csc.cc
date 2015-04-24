@@ -58,7 +58,7 @@ int main(int argc, char **argv)
                 else if ( ! strcmp ( METHOD_SA, sw . method ) )  method = ( char * ) METHOD_SA;
 		else
 		{
-                        fprintf ( stderr, " Error: Method argument should be `hCSC', `nCSC' or `saCSC' for heuristic, naive or suffix-array Circular String Comparison.\n" );
+                        fprintf ( stderr, " Error: Method argument should be `hCSC', `nCSC' or `saCSC' for heuristic, naive or suffix-array Circular Sequence Comparison.\n" );
                         return ( 1 );
 		}
 
@@ -211,10 +211,9 @@ int main(int argc, char **argv)
 	unsigned int distance = m + n;
 	unsigned int rotation = 0;
 
-
 	/* Run the algorithm using the user's chosen method */
 	TPOcc D;
-	if (strcmp ( method, METHOD_SA ) == 0 )
+	if ( strcmp ( method, METHOD_SA ) == 0 )
 	{
 		circular_sequence_comparison ( seq[0], seq[1], sw, &rotation, &distance );
 		D . err = distance;
@@ -298,9 +297,20 @@ int main(int argc, char **argv)
 		fprintf( stderr, " Error: file close error!\n");
 		return ( 1 );
 	}
-        fprintf( stderr, " Blockwise q-gram distance: %u\n", D . err );
-        fprintf( stderr, " Rotation                 : %u\n", D . rot );
-        fprintf( stderr, " (Multi)FASTA output file : %s\n",  sw . output_filename );
+
+        fprintf( stderr, " Seq x id is %s and its length is %d\n", seq_id[0], m );
+        fprintf( stderr, " Seq y id is %s and its length is %d\n", seq_id[1], n );
+        fprintf( stderr, " q-gram length is %d\n",                 sw . q );
+	if ( strcmp ( method, METHOD_SA ) == 0 ) {
+		fprintf( stderr, " Number of blocks is %d\n",              sw . b );
+		fprintf( stderr, " Block length is %d\n",                  m / sw . b );
+	} else {
+		fprintf( stderr, " Number of blocks is %d\n",              m / sw . b );
+		fprintf( stderr, " Block length is %d\n",                  sw . b );
+	}
+        fprintf( stderr, " Blockwise q-gram distance: %u\n",       D . err );
+        fprintf( stderr, " Rotation                 : %u\n",       D . rot );
+        fprintf( stderr, " (Multi)FASTA output file : %s\n",       sw . output_filename );
         fprintf( stderr, "Elapsed time for comparing sequences: %lf secs\n", ( end - start ) );
 
 	/* De-allocate */
