@@ -1,0 +1,4 @@
+*.o
+cyc_nw
+in.fasta
+out.fasta

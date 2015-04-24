@@ -17,10 +17,10 @@
 **/
 
 #include <iostream>
-#include <cstdlib>
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <string>
 #include <sys/time.h>
 #include "csc.h"
 #include "hcsc.h"
@@ -226,27 +226,15 @@ int main(int argc, char **argv)
 		string alphabet = "";
 		if ( strcmp ( sw . alphabet, ALPHABET_DNA ) == 0 )
 		{
-			if ( seq[0][0] < 'a' ) {
-				alphabet = DNA;
-			} else {
-				alphabet = DNA_LC;
-			}
+			alphabet = DNA;
 		}
 		else if ( strcmp ( sw. alphabet, ALPHABET_PROT ) == 0 )
 		{
-			if ( seq[0][0] < 'a' ) {
-				alphabet = PROT;
-			} else {
-				alphabet = PROT_LC;
-			}
+			alphabet = PROT;
 		}
-		else if ( strcmp ( sw. alphabet, ALPHABET_IUPAC ) == 0 )
+		else
 		{
-			if ( seq[0][0] < 'a' ) {
-				alphabet = IUPAC;
-			} else {
-				alphabet = IUPAC_LC;
-			}
+			alphabet = IUPAC;
 		}
 
 		//run the heuristic or naive algorithm
@@ -310,9 +298,9 @@ int main(int argc, char **argv)
 		fprintf( stderr, " Error: file close error!\n");
 		return ( 1 );
 	}
-        fprintf( stderr, " Blockwise q-gram distance: %d\n", ( int ) D . err );
-        fprintf( stderr, " Rotation                 : %d\n", D . rot );
-        fprintf( stderr, " (Multi)FASTA output file : %s\n", sw . output_filename );
+        fprintf( stderr, " Blockwise q-gram distance: %u\n", D . err );
+        fprintf( stderr, " Rotation                 : %u\n", D . rot );
+        fprintf( stderr, " (Multi)FASTA output file : %s\n",  sw . output_filename );
         fprintf( stderr, "Elapsed time for comparing sequences: %lf secs\n", ( end - start ) );
 
 	/* De-allocate */
@@ -330,3 +318,4 @@ int main(int argc, char **argv)
 
 	return ( 0 );
 }
+

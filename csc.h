@@ -16,6 +16,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **/
 
+#ifndef __CSC__
+#define __CSC__
+
 #include <sdsl/bit_vectors.hpp>
 #define ALLOC_SIZE              1048576
 #define DEL                     '$'
@@ -27,11 +30,8 @@
 #define ALPHABET_PROT           "PROT"
 #define ALPHABET_IUPAC          "IUPAC"
 #define DNA                     "ACGTN"                         //DNA alphabet
-#define DNA_LC                  "acgtn"                         //lowercase DNA alphabet
 #define PROT                    "ARNDCQEGHILKMFPSTWYV"          //Proteins alphabet
-#define PROT_LC                 "arndcqeghilkmfpstwyv"          //lowercase Proteins alphabet
 #define IUPAC                   "ACGTUWSMKRYBDHVN"          	//IUPAC alphabet
-#define IUPAC_LC                "acgtuwsmkrybdhvn"          	//lowercase IUPAC alphabet
 #define max(a,b) ((a) > (b)) ? (a) : (b)
 #define min(a,b) ((a) < (b)) ? (a) : (b)
 
@@ -47,20 +47,20 @@ typedef int32_t INT;
 #endif
 
 struct TSwitch
- {
-   char *          input_filename;         // the input file name
-   char *          output_filename;        // the output file name
-   char *          alphabet;               // the output file name
-   char *          method;                 // algorithm/method
-   unsigned int         b;                 // block size/number
-   unsigned int         q;                 // q-gram size
- };
+{
+    char *               input_filename;         // the input file name
+    char *               output_filename;        // the output file name
+    char *               alphabet;               // the output file name
+    char *               method;                 // algorithm/method
+    unsigned int         b;                      // block size/number
+    unsigned int         q;                      // q-gram size
+};
 
 struct TPOcc
- {
-   double               err;
-   unsigned int         rot;
- };
+{
+    unsigned int         err;
+    unsigned int         rot;
+};
 
 double gettime( void );
 int decode_switches ( int argc, char * argv [], struct TSwitch * sw );
@@ -69,3 +69,5 @@ unsigned int LCParray ( unsigned char *text, INT n, INT * SA, INT * ISA, INT * L
 void partitioning ( INT i, INT j, INT f, INT m, INT * mf, INT * ind );
 unsigned int circular_sequence_comparison (  unsigned char * x, unsigned char * y, struct TSwitch  sw, unsigned int * rotation, unsigned int * distance );
 unsigned int create_rotation ( unsigned char * x, unsigned int offset, unsigned char * rotation );
+
+#endif

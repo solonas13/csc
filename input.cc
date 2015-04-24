@@ -136,3 +136,4 @@ void usage ( void )
    fprintf ( stdout, "  -q, --q-length            <int>     The q-gram length.\n");
    fprintf ( stdout, "  -b, --num-blocks          <int>     The number of blocks.\n");
  }
+

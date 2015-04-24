@@ -1,6 +1,6 @@
 *.o
 csc
-Makefile
+/Makefile
 in.fasta
 out.fasta
 libsdsl
