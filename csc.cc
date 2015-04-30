@@ -240,12 +240,12 @@ int main(int argc, char **argv)
 		struct BestMatch bm;
 		if ( strcmp ( method, METHOD_H ) == 0 )
 		{
-			hCSC hcsc ( xx, 2 * m, y, n, sw . q, sw . b, alphabet );
+			hCSC hcsc ( xx, 2 * m, y, n, sw . q, m / sw . b, alphabet );
 			hcsc . run ( &bm );
 		}
 		else if ( strcmp ( method, METHOD_N ) == 0 )
 		{
-			nCSC ncsc ( xx, 2 * m, y, n, sw . q, sw . b, alphabet );
+			nCSC ncsc ( xx, 2 * m, y, n, sw . q, m / sw . b, alphabet );
 			ncsc . run ( &bm );
 		}
 
