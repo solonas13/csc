@@ -1,6 +1,6 @@
 /**
     CSC: Circular Sequence Comparison
-    Copyright (C) 2015 Solon P. Pissis. 
+    Copyright (C) 2015 Solon P. Pissis, Ahmad Retha, Fatima Vayani 
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
