@@ -23,6 +23,7 @@
 #include <string>
 #include <sys/time.h>
 #include "csc.h"
+#include "sacsc.h"
 #include "hcsc.h"
 #include "ncsc.h"
 
@@ -186,7 +187,6 @@ int main(int argc, char **argv)
 		return ( 1 );
 	}
 
-
 	unsigned int m = strlen ( ( char * ) seq[0] );
 	unsigned int n = strlen ( ( char * ) seq[1] );
 
@@ -328,4 +328,5 @@ int main(int argc, char **argv)
 
 	return ( 0 );
 }
+
 

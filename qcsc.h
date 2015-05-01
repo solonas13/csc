@@ -1,4 +1,3 @@
-
 /**
     CSC: Circular Sequence Comparison
     Copyright (C) 2015 Solon P. Pissis, Ahmad Retha, Fatima Vayani 
