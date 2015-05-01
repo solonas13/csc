@@ -3,8 +3,8 @@ CSC: Circular Sequence Comparison
 
 GNU GPLv3 License; Copyright (C) 2015 Solon P. Pissis, Ahmad Retha and Fatima Vayani.
 
-Given two sequences x and y, CSC finds the cyclic rotation of x that
-minimises the blockwise q-gram distance between x and y.
+Given two sequences x and y, CSC finds the cyclic rotation of x (or an approximation of it) 
+that minimises the blockwise q-gram distance from y.
 
 To compile CSC, please follow the instructions given in file INSTALL.
 
