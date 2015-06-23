@@ -172,7 +172,7 @@ void usage ( void )
    fprintf ( stdout, " Extra (Optional; Only use with saCSC and hCSC):\n" );
    fprintf ( stdout, "  -Q, --q-length-max        <int>     The maximum q-gram length. The program\n"
                      "                                      will try all in range min .. max.\n" );
-   fprintf ( stdout, "  -l, --block-length-max    <int>     The maximum length of each block. The\n"
+   fprintf ( stdout, "  -L, --block-length-max    <int>     The maximum length of each block. The\n"
                      "                                      program will try all in range min .. max.\n" );
  }
 
