@@ -38,8 +38,10 @@ struct TSwitch
     char *               output_filename;        // the output file name
     char *               alphabet;               // the output file name
     char *               method;                 // algorithm/method
-    unsigned int         b;                      // block size/number
-    unsigned int         q;                      // q-gram size
+    unsigned int         l;                      // block length (min. required)
+    unsigned int         L;                      // block length (max. optional)
+    unsigned int         q;                      // q-gram size (min. required)
+    unsigned int         Q;                      // q-gram size (max. optional)
 };
 
 struct TPOcc
@@ -51,6 +53,6 @@ struct TPOcc
 double gettime( void );
 int decode_switches ( int argc, char * argv [], struct TSwitch * sw );
 void usage ( void );
-unsigned int create_rotation ( unsigned char * x, unsigned int offset, unsigned char * rotation );
+void create_rotation ( unsigned char * x, unsigned int offset, unsigned char * rotation );
 
 #endif

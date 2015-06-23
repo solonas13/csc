@@ -131,7 +131,7 @@ unsigned int circular_sequence_comparison (  unsigned char * x, unsigned char * 
         }
 
 	/* Ranking of q-grams and creation of x' and y' */
-	int b = sw . b;
+	int b = (int) ( m / sw . l );
 	int q = sw . q;
 
 	//fprintf(stderr, " %d %d.\n", b, q );
@@ -328,4 +328,3 @@ void partitioning ( INT i, INT j, INT f, INT m, INT * mf, INT * ind )
 	ind[j + i * f] = first;
 	mf[j + i * f] = last - first + 1;
 }
-

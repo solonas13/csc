@@ -41,7 +41,7 @@ int main(int argc, char **argv)
         unsigned char ** seq_id = NULL;         // the sequence id in memory
 	char *          alphabet;               // the alphabet
 	unsigned int    i, j;
-	unsigned int    b, q;
+	unsigned int    l, L, q, Q;             // the program parameters
 
 	/* Decodes the arguments */
         i = decode_switches ( argc, argv, &sw );
@@ -57,11 +57,11 @@ int main(int argc, char **argv)
                 if      ( ! strcmp ( METHOD_H, sw . method ) )   method = ( char * ) METHOD_H;
                 else if ( ! strcmp ( METHOD_N, sw . method ) )   method = ( char * ) METHOD_N;
                 else if ( ! strcmp ( METHOD_SA, sw . method ) )  method = ( char * ) METHOD_SA;
-		else
-		{
+                else
+                {
                         fprintf ( stderr, " Error: Method argument should be `hCSC', `nCSC' or `saCSC' for heuristic, naive or suffix-array Circular Sequence Comparison.\n" );
                         return ( 1 );
-		}
+                }
 
                 if      ( ! strcmp ( "DNA", sw . alphabet ) )   alphabet = ( char * ) DNA;
                 else if ( ! strcmp ( "PROT", sw . alphabet ) )  alphabet = ( char * ) PROT;
@@ -71,8 +71,16 @@ int main(int argc, char **argv)
                         return ( 1 );
                 }
 
-		q       = sw . q;
-		b       = sw . b;
+                if      ( sw . L < sw . l || sw . Q < sw . q )
+                {
+                        fprintf ( stderr, " Error: The optional maxmimum parameters cannot be less than the mandatory parameters!\n" );
+                        return ( 1 );
+                }
+
+                q       = sw . q;
+                Q       = sw . Q;
+                l       = sw . l;
+                L       = sw . L;
 
                 input_filename          = sw . input_filename;
                 output_filename         = sw . output_filename;
@@ -190,13 +198,13 @@ int main(int argc, char **argv)
 	unsigned int m = strlen ( ( char * ) seq[0] );
 	unsigned int n = strlen ( ( char * ) seq[1] );
 
-	if ( sw . b < 1 || sw . b > m - sw . q + 1  || sw . b > n - sw . q + 1 )
+	if ( sw . L < 1 || sw . L > m - sw . q + 1  || sw . L > n - sw . q + 1 )
 	{
-        	fprintf( stderr, " Error: Illegal number of blocks.\n" );
+        	fprintf( stderr, " Error: Illegal block length.\n" );
 		return ( 1 );
 	}
 
-	if ( sw . q >= m || sw . q >= n )
+	if ( sw . Q >= sw . l )
 	{
         	fprintf( stderr, " Error: Illegal q-gram length.\n" );
 		return ( 1 );
@@ -208,49 +216,69 @@ int main(int argc, char **argv)
         	fprintf( stderr, " Warning: Only the first two (%s, %s) will be processed!\n", seq_id[0], seq_id[1] );
 	}
 
+
+	/* Run the algorithm using the user's chosen method - Naive method does not go through repeats */
+	string xx ( ( char * ) seq[0] );
+	xx = xx + xx;
+	string y ( ( char * ) seq[1] );
+	string alphabetLetters = "";
+	if ( strcmp ( sw . alphabet, ALPHABET_DNA ) == 0 )
+	{
+		alphabetLetters = DNA;
+	}
+	else if ( strcmp ( sw. alphabet, ALPHABET_PROT ) == 0 )
+	{
+		alphabetLetters = PROT;
+	}
+	else
+	{
+		alphabetLetters = IUPAC;
+	}
 	unsigned int distance = m + n;
 	unsigned int rotation = 0;
+	TPOcc D, DTemp;
+	D . err = UINT_MAX;
+	struct BestMatch bm;
+	struct TSwitch swTemp;
+	memcpy ( &swTemp, &sw, sizeof ( TSwitch ) );
 
-	/* Run the algorithm using the user's chosen method */
-	TPOcc D;
-	if ( strcmp ( method, METHOD_SA ) == 0 )
+	if ( strcmp ( method, METHOD_N ) == 0 )
 	{
-		circular_sequence_comparison ( seq[0], seq[1], sw, &rotation, &distance );
-		D . err = distance;
-		D . rot = rotation;
-	} else {
-		string xx ( ( char * ) seq[0] );
-		xx = xx + xx;
-		string y ( ( char * ) seq[1] );
-		string alphabet = "";
-		if ( strcmp ( sw . alphabet, ALPHABET_DNA ) == 0 )
-		{
-			alphabet = DNA;
-		}
-		else if ( strcmp ( sw. alphabet, ALPHABET_PROT ) == 0 )
-		{
-			alphabet = PROT;
-		}
-		else
-		{
-			alphabet = IUPAC;
-		}
-
-		//run the heuristic or naive algorithm
-		struct BestMatch bm;
-		if ( strcmp ( method, METHOD_H ) == 0 )
-		{
-			hCSC hcsc ( xx, 2 * m, y, n, sw . q, m / sw . b, alphabet );
-			hcsc . run ( &bm );
-		}
-		else if ( strcmp ( method, METHOD_N ) == 0 )
-		{
-			nCSC ncsc ( xx, 2 * m, y, n, sw . q, m / sw . b, alphabet );
-			ncsc . run ( &bm );
-		}
-
+		nCSC ncsc ( xx, 2 * m, y, n, sw . q, sw . l, alphabetLetters );
+		ncsc . run ( &bm );
 		D . err = bm . score;
 		D . rot = bm . pos;
+	}
+	else
+	{
+		unsigned int q, l;
+		for ( q = sw . q ; q <= sw . Q; q ++ ) {
+			for ( l = sw . l ; l <= sw . L; l ++ ) {
+				swTemp . q = q;
+				swTemp . l = l;
+			  
+				if ( strcmp ( method, METHOD_SA ) == 0 )
+				{
+				        swTemp . l = (unsigned int) ( m / l ); //use block number instead of length for saCSC				  
+					circular_sequence_comparison ( seq[0], seq[1], swTemp, &rotation, &distance );
+					DTemp . err = distance;
+					DTemp . rot = rotation;
+				} else {
+					hCSC hcsc ( xx, 2 * m, y, n, sw . q, sw . l, alphabetLetters );
+					hcsc . run ( &bm );
+					DTemp . err = bm . score;
+					DTemp . rot = bm . pos;
+				}
+
+				//store best combination
+				if ( DTemp . err < D . err ) {
+				    D . err = DTemp . err;
+				    D . rot = DTemp . rot;
+				    sw . q = q;
+				    sw . l = l;
+				}
+			}
+		}
 	}
 
 	#if 0
@@ -301,13 +329,8 @@ int main(int argc, char **argv)
         fprintf( stderr, " Seq x id is %s and its length is %d\n", seq_id[0], m );
         fprintf( stderr, " Seq y id is %s and its length is %d\n", seq_id[1], n );
         fprintf( stderr, " q-gram length is %d\n",                 sw . q );
-	if ( strcmp ( method, METHOD_SA ) == 0 ) {
-		fprintf( stderr, " Number of blocks is %d\n",              sw . b );
-		fprintf( stderr, " Block length is %d\n",                  m / sw . b );
-	} else {
-		fprintf( stderr, " Number of blocks is %d\n",              m / sw . b );
-		fprintf( stderr, " Block length is %d\n",                  sw . b );
-	}
+        fprintf( stderr, " Number of blocks is %d\n",              m / sw . l );
+        fprintf( stderr, " Block length is %d\n",                  sw . l );
         fprintf( stderr, " Blockwise q-gram distance: %u\n",       D . err );
         fprintf( stderr, " Rotation                 : %u\n",       D . rot );
         fprintf( stderr, " (Multi)FASTA output file : %s\n",       sw . output_filename );
@@ -328,5 +351,3 @@ int main(int argc, char **argv)
 
 	return ( 0 );
 }
-
-
