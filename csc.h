@@ -60,6 +60,7 @@ void usage ( void );
 void create_rotation ( unsigned char * x, unsigned int offset, unsigned char * rotation );
 void create_backward_rotation ( unsigned char * x, unsigned int offset, unsigned char * rotation );
 int refine ( unsigned char * x, unsigned int m, unsigned char * y, unsigned int n, double p, char * alphabet );
+void init_substitution_score_tables ();
 double delta ( char a, char b, char * alphabet );
 
 #endif

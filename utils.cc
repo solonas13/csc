@@ -30,35 +30,34 @@
 #include "EDNAFULL.h"
 #include "EBLOSUM62.h"
 
-using namespace std;
+//using namespace std;
 
 int EDNA[90];
 int BLOSUM[91];
 
-void prepare_substitution_score_tables ()
+void init_substitution_score_tables ()
 {
-    int z;
+    int i;
     char edna[] = "ATGCSWRYKMBVHDN";
-    for ( z = 0; z < 15; z ++ ) {
-	EDNA[(int)edna[z]] = z;
+    for ( i = 0; i < 15; i ++ ) {
+	EDNA[(int)edna[i]] = i;
     }
     char blosum[] = "ARNDCQEGHILKMFPSTWYVBZX*";
-    for ( z = 0; z < 24; z ++ ) {
-	BLOSUM[(int)blosum[z]] = z;
+    for ( i = 0; i < 24; i ++ ) {
+	BLOSUM[(int)blosum[i]] = i;
     }
 }
  
 double delta ( char a, char b, char * alphabet )
  {
-    if ( a == DEL && b == DEL ) {
+    /*if ( a == DEL && b == DEL ) {
 	return ( double ) 10;
     } else if ( a == b ) {
 	return ( double ) 5;
     } else {
 	return (double) -4;
-    }
+    }*/
       
-    /*
     if ( a == DEL && b == DEL ) {
 	return ( double ) 10;
     }
@@ -74,7 +73,7 @@ double delta ( char a, char b, char * alphabet )
     {
 	return ( double ) EDNAFULL_matrix[ EDNA[(int)a] ][ EDNA[(int)b] ];
     }
-    */
+    
  }
 
 static struct option long_options[] =
@@ -267,10 +266,10 @@ void create_backward_rotation ( unsigned char * x, unsigned int offset, unsigned
 
 int refine ( unsigned char * x, unsigned int m, unsigned char * y, unsigned int n, double p, char * alphabet )
  {
-    prepare_substitution_score_tables();
+    init_substitution_score_tables();
 
     //create X and Y prine (Xp, Yp)
-    unsigned int sectionLength = ( unsigned int ) floor ( ( p / 100 ) * min ( m, n ) );
+    unsigned int sectionLength = ( unsigned int ) floor ( ( p / 100 ) * std::min ( m, n ) );
     unsigned int sl3 = sectionLength * 3;
     unsigned char repeat_char = DEL;
     unsigned char * Xp, * Yp;
@@ -338,17 +337,14 @@ int refine ( unsigned char * x, unsigned int m, unsigned char * y, unsigned int 
 
     for ( r = 0; r < sl3; r++ )
     {
-        /*if ( r >= sectionLength && r <= 2 * sectionLength ) {
+        if ( r >= sectionLength && r < 2 * sectionLength ) {
 	    continue;
-	}*/
-	
+	}
+
 	yr[0] = '\0';
 
-	create_rotation ( Yp, r, yr );
-	
-	if ( r == 0 )
-	  fprintf ( stderr, "Yr: %s, Xp: %s\n", yr, Xp );
-	
+	create_rotation ( Xp, r, yr );
+
 	memset ( d0, 0, sizeof ( double ) * sl3 + 1 );
 	memset ( d1, 0, sizeof ( double ) * sl3 + 1 );
 	memset ( t0, 0, sizeof ( double ) * sl3 + 1 );
@@ -368,13 +364,13 @@ int refine ( unsigned char * x, unsigned int m, unsigned char * y, unsigned int 
 	for ( j = 2; j < sl3 + 1; j++ ) {
 	    t0[j] = t0[j - 1] + h;
 	}
-	
+
 	for ( i = 1; i < sl3 + 1; i++ )
 	{
 	    for ( j = 0; j < sl3 + 1; j++ )
 	    {
 		double u, v, w;
-		
+
 		switch ( i % 2 ) 
 		{
 
@@ -390,21 +386,20 @@ int refine ( unsigned char * x, unsigned int m, unsigned char * y, unsigned int 
 		    }
 		    else 
 		    {
-			d0[j] = max ( d1[j] + h, t1[j] + g );
+			d0[j] = std::max ( d1[j] + h, t1[j] + g );
 			u = d0[j];
 
-			in[j] = max ( in[j - 1] + h, t0[j - 1] + g ); //i0
+			in[j] = std::max ( in[j - 1] + h, t0[j - 1] + g ); //i0
 			v = in[j];
 
-			w = t1[j - 1] + delta ( yr[j - 1], Xp[i - 1], alphabet );
+			w = t1[j - 1] + delta ( Yp[j - 1], yr[i - 1], alphabet );
 
-			t0[j] = max ( w, max ( u, v ) );
+			t0[j] = std::max ( w, std::max ( u, v ) );
 
-			if ( i == sl3 && j == sl3 && t0[sl3] > max_score )
+			if ( i == sl3 && j == sl3 && t0[j] > max_score )
 			{
-			    fprintf ( stderr, "Max score: %f rotation: %u\n", t0[j], r );
 			    max_score = t0[j];
-			    rotation  = r;
+			    rotation  = ( r >= sectionLength ) ? -( sl3 - r ) : r;
 			}
 		    }
 
@@ -422,21 +417,20 @@ int refine ( unsigned char * x, unsigned int m, unsigned char * y, unsigned int 
 		    }	
 		    else 
 		    {
-			d1[j] = max ( d0[j] + h, t0[j] + g );
+			d1[j] = std::max ( d0[j] + h, t0[j] + g );
 			u = d1[j];
 
-			in[j] = max ( in[j - 1] + h, t1[j - 1] + g ); //i1
+			in[j] = std::max ( in[j - 1] + h, t1[j - 1] + g ); //i1
 			v = in[j];
 
-			w = t0[j - 1] + delta ( yr[j - 1], Xp[i - 1], alphabet );
+			w = t0[j - 1] + delta (  Yp[j - 1], yr[i - 1], alphabet );
 
-			t1[j] = max ( w, max ( u, v ) );
+			t1[j] = std::max ( w, std::max ( u, v ) );
 
-			if ( i == sl3 && j == sl3 && t1[sl3] > max_score )
+			if ( i == sl3 && j == sl3 && t1[j] > max_score )
 			{
-			    fprintf ( stderr, "Max score: %f rotation: %u\n", t1[j], r );
 			    max_score = t1[j];
-			    rotation  = r;
+			    rotation  = ( r >= sectionLength ) ? -( sl3 - r ) : r;
 			}
 		    }
 

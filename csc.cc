@@ -320,120 +320,32 @@ int main(int argc, char **argv)
 		return ( 1 );
 	}
 
-	unsigned char * rot_str = ( unsigned char * ) calloc ( m + 1, sizeof ( unsigned char ) );
+	unsigned char * rot_str;
+	if ( ( rot_str = ( unsigned char * ) calloc ( m + 1, sizeof ( unsigned char ) ) ) == NULL )
+	{
+		fprintf ( stderr, " Error: Could not allocate rot_str!\n" );
+		return ( 1 );
+	}
 
 	if ( strcmp ( method, METHOD_N ) == 0 || sw . P == 0 )
 	{
-	    create_rotation ( seq[0], D . rot, rot_str );
+		create_rotation ( seq[0], D . rot, rot_str );
 	}
-	//refine the result if P is defined for hCSC and saCSC
+	//refine the result if P is defined for method hCSC or saCSC
 	else if ( sw . P > 0 && strcmp ( method, METHOD_H ) == 0 || strcmp ( method, METHOD_SA ) == 0 )
 	{
-	    /*
-	    //create X and Y prine (Xp, Yp)
-	    unsigned int pLen = ( unsigned int ) floor ( ( sw . P / 100 ) * min ( m, n ) );
-	    unsigned char repeat_char = ( strcmp ( sw . alphabet, ALPHABET_DNA ) == 0 ) ? 'N' : 'X';
-	    unsigned char * Xp, * Yp;
-	    if ( ( Xp = ( unsigned char * ) calloc ( 3 * pLen + 1, sizeof ( unsigned char ) ) ) == NULL ) {
-		fprintf ( stderr, " Error: could not allocate Xp.\n" );
-		return 1;
-	    }
-	    if ( ( Yp = ( unsigned char * ) calloc ( 3 * pLen + 1, sizeof ( unsigned char ) ) ) == NULL ) {
-		fprintf ( stderr, " Error: could not allocate Yp.\n" );
-		return 1;
-	    }
+		create_rotation ( seq[0], D . rot, rot_str );
+		memcpy ( seq[0], rot_str, m * sizeof ( unsigned char ) );
+		rot_str[0] = '\0';
+		int refinement = refine ( seq[0], m, seq[1], n, sw . P, sw . alphabet );
 
-	    //create X and Y prine strings composed of prefix, repeat_char, suffix e.g. ATCGAXXXXXAGTTC
-	    fprintf ( stderr, "Size of m: %u, x: %d\n", m, (int) (0.5 * xx.length()));
-	    memcpy ( Xp, seq[0], pLen * sizeof ( unsigned char ) );
-	    memset ( Xp + pLen * sizeof ( unsigned char ), repeat_char, pLen * sizeof ( unsigned char ) );
-	    memcpy ( Xp + 2 * pLen * sizeof ( unsigned char ), &seq[0][ m - pLen ], pLen * sizeof ( unsigned char ) );
-	    Xp[3 * pLen] = '\0';
-	    memcpy ( Yp, y . substr ( 0, pLen ) . c_str (), pLen * sizeof ( unsigned char ) );
-	    memset ( Yp + pLen * sizeof ( unsigned char ), repeat_char, pLen * sizeof ( unsigned char ) );
-	    memcpy ( Yp + 2 * pLen * sizeof ( unsigned char ), y . substr ( y . length() - pLen - 1 ) . c_str (), pLen * sizeof ( unsigned char ) );
-	    Yp[3 * pLen] = '\0';
-
-	    //create rows of DP matrix
-	    unsigned int * D0,
-	                 * D1;
-	    if ( ( D0 = ( unsigned int * ) calloc ( 1 + 3 * pLen, sizeof ( unsigned int ) ) ) == NULL ||
-	         ( D1 = ( unsigned int * ) calloc ( 1 + 3 * pLen, sizeof ( unsigned int ) ) ) == NULL )
-	    {
-		fprintf ( stderr, " Error: could not allocate D-matrix.\n" );
-		return 1;
-	    }
-	    unsigned int del = 1, ins = 1, sub = 1, min_score = UINT_MAX;
-	    int min_p;
-
-	    //stores the rotated sequence
-	    unsigned char * Xpr;
-	    if ( ( Xpr = ( unsigned char * ) calloc ( 3 * pLen + 1, sizeof ( unsigned char ) ) ) == NULL ) {
-		fprintf ( stderr, " Error: could not allocate Xpr.\n" );
-		return 1;
-	    }*/
-
-	    //cyclical global alignment - rotate the front, then the back of the Xp seq
-	    /*for ( h = 0; h < 2 * pLen; h ++ )
-	    {
-		//create rotation
-		k = h;
-		if ( h <= pLen ) {
-		    create_rotation ( Xp, k, Xpr );
+		if ( refinement >= 0 ) {
+		    create_rotation ( seq[0], refinement, rot_str );
 		} else {
-		    k = k - pLen;
-		    create_backward_rotation ( Xp, k, Xpr );
+		    create_backward_rotation ( seq[0], -refinement, rot_str );
 		}
 
-		//init DP matrix
-		D0[0] = 0;
-		for ( j = 1; j <= 3 * pLen; j ++ ) {
-		    D0[j] = D0[j - 1] + del;
-		}
-
-		//DP
-		for ( i = 1; i <= 3 * pLen; i ++ ) {
-		    D1[0] = D0[0] + ins;
-
-		    for ( j = 1; j <= 3 * pLen; j ++ ) {
-			D1[j] = min (
-			    D0[j - 1] + ( ( Xpr[i - 1] != Yp[j - 1] ) ? sub : 0 ),
-			    min ( D0[j] + del, D1[j - 1] + ins )
-			);
-		    }
-
-		    if ( i < 3 * pLen ) {
-			for ( j = 0; j <= 3 * pLen; j ++ ) {
-			    D0[j] = D1[j];
-			}
-		    }
-		}
-
-		//Save best match
-		if ( D1[3 * pLen] < min_score ) {
-		    min_score = D1[3 * pLen];
-		    min_p = ( h > pLen ) ? -k : k;
-		}
-	    }*/
-
-	    //debugging
-	    /*fprintf ( stderr, "Final min_p %d min_score %u\n", min_p, min_score );
-	    create_rotation ( seq[0], min_p, rot_str );
-	    fprintf ( stderr, "Yp: %s\nXp: %s\nXpr: %s\n", Yp, Xp, Xpr );*/
-
-	    //update the rotation with the refined position
-	    int refinement = refine (seq[0], m, seq[1], n, sw . P, sw . alphabet);
-	    fprintf ( stderr, "Refinement: %d\n", refinement );
-	    D . rot = (unsigned int) (int)D . rot + refinement;
-            create_rotation ( seq[0], D . rot, rot_str );
-
-	    /*
-	    free ( Xpr );
-	    free ( Xp );
-	    free ( Yp );
-	    free ( D0 );
-	    free ( D1 );
-	    */
+		D . rot = (unsigned int) (int)D . rot + refinement;
 	}
 
 
