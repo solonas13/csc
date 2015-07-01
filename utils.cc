@@ -16,14 +16,66 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **/
 
+#include <iostream>
 #include <stdio.h>
 #include <math.h>
+#include <float.h>
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
 #include <assert.h>
+#include <limits.h>
 #include <sys/time.h>
 #include "csc.h"
+#include "EDNAFULL.h"
+#include "EBLOSUM62.h"
+
+using namespace std;
+
+int EDNA[90];
+int BLOSUM[91];
+
+void prepare_substitution_score_tables ()
+{
+    int z;
+    char edna[] = "ATGCSWRYKMBVHDN";
+    for ( z = 0; z < 15; z ++ ) {
+	EDNA[(int)edna[z]] = z;
+    }
+    char blosum[] = "ARNDCQEGHILKMFPSTWYVBZX*";
+    for ( z = 0; z < 24; z ++ ) {
+	BLOSUM[(int)blosum[z]] = z;
+    }
+}
+ 
+double delta ( char a, char b, char * alphabet )
+ {
+    if ( a == DEL && b == DEL ) {
+	return ( double ) 10;
+    } else if ( a == b ) {
+	return ( double ) 5;
+    } else {
+	return (double) -4;
+    }
+      
+    /*
+    if ( a == DEL && b == DEL ) {
+	return ( double ) 10;
+    }
+    else if ( ( a == DEL && b != DEL ) || ( b == DEL && a != DEL ) ) {
+	return (double) -10;
+    }
+   
+    if ( strcmp ( alphabet, ALPHABET_PROT ) == 0 )
+    {
+	return ( double ) EBLOSUM62_matrix[ BLOSUM[(int)a] ][ BLOSUM[(int)b] ];
+    }
+    else
+    {
+	return ( double ) EDNAFULL_matrix[ EDNA[(int)a] ][ EDNA[(int)b] ];
+    }
+    */
+ }
 
 static struct option long_options[] =
  {
@@ -32,9 +84,10 @@ static struct option long_options[] =
    { "input-file",              required_argument, NULL, 'i' },
    { "output-file",             required_argument, NULL, 'o' },
    { "q-length-min",            required_argument, NULL, 'q' },
-   { "q-length-max",            required_argument, NULL, 'Q' },
+   { "q-length-max",            optional_argument, NULL, 'Q' },
    { "block-length-min",        required_argument, NULL, 'l' },
-   { "block-length-max",        required_argument, NULL, 'L' },
+   { "block-length-max",        optional_argument, NULL, 'L' },
+   { "percent-refine",          optional_argument, NULL, 'P' },
    { "help",                    no_argument,       NULL, 'h' },
    { NULL,                      0,                 NULL, 0   }
  };
@@ -60,9 +113,10 @@ int decode_switches ( int argc, char * argv [], struct TSwitch * sw )
    sw -> Q                              = 0;
    sw -> l                              = 10;
    sw -> L                              = 0;
+   sw -> P                              = 0.0;
    args = 0;
 
-   while ( ( opt = getopt_long ( argc, argv, "m:a:i:o:q:Q:l:L:h", long_options, &oi ) ) != - 1 )
+   while ( ( opt = getopt_long ( argc, argv, "m:a:i:o:q:Q:l:L:P:h", long_options, &oi ) ) != - 1 )
     {
       switch ( opt )
        {
@@ -130,6 +184,16 @@ int decode_switches ( int argc, char * argv [], struct TSwitch * sw )
            args ++;
            break;
 
+         case 'P':
+           val = (double) atof ( optarg );
+           if ( optarg == ep )
+            {
+              return ( 0 );
+            }
+           sw -> P = val;
+           args ++;
+           break;
+
          case 'h':
            return ( 0 );
        }
@@ -174,6 +238,8 @@ void usage ( void )
                      "                                      will try all in range min .. max.\n" );
    fprintf ( stdout, "  -L, --block-length-max    <int>     The maximum length of each block. The\n"
                      "                                      program will try all in range min .. max.\n" );
+   fprintf ( stdout, "  -P, --percent-refine      <float>   Refine the alignment of hCSC/saCSC by\n"
+                     "                                      checking a percentage of the ends (e.g. 2.5)\n" );
  }
 
 double gettime( void )
@@ -189,4 +255,209 @@ void create_rotation ( unsigned char * x, unsigned int offset, unsigned char * r
     memmove ( &rotation[0], &x[offset], m - offset );
     memmove ( &rotation[m - offset], &x[0], offset );
     rotation[m] = '\0';
+ }
+
+void create_backward_rotation ( unsigned char * x, unsigned int offset, unsigned char * rotation )
+ {
+    unsigned int m = strlen ( ( char * ) x );
+    memmove ( &rotation[0], &x[m - offset], offset );
+    memmove ( &rotation[offset], &x[0], m - offset );
+    rotation[m] = '\0';
+ }
+
+int refine ( unsigned char * x, unsigned int m, unsigned char * y, unsigned int n, double p, char * alphabet )
+ {
+    prepare_substitution_score_tables();
+
+    //create X and Y prine (Xp, Yp)
+    unsigned int sectionLength = ( unsigned int ) floor ( ( p / 100 ) * min ( m, n ) );
+    unsigned int sl3 = sectionLength * 3;
+    unsigned char repeat_char = DEL;
+    unsigned char * Xp, * Yp;
+    if ( ( Xp = ( unsigned char * ) calloc ( sl3 + 1, sizeof ( unsigned char ) ) ) == NULL ) {
+	fprintf ( stderr, " Error: could not allocate Xp.\n" );
+	return 1;
+    }
+    if ( ( Yp = ( unsigned char * ) calloc ( sl3 + 1, sizeof ( unsigned char ) ) ) == NULL ) {
+	fprintf ( stderr, " Error: could not allocate Yp.\n" );
+	return 1;
+    }
+    
+    //make Xp and Yp contain prefix, repeat_char middle and suffix of x and y respectively, e.g. AATGCA$$$$$GGGAT
+    memcpy ( Xp, x, sectionLength * sizeof ( unsigned char ) );
+    memset ( Xp + sectionLength * sizeof ( unsigned char ), repeat_char, sectionLength * sizeof ( unsigned char ) );
+    memcpy ( Xp + 2 * sectionLength * sizeof ( unsigned char ), &x[ m - sectionLength ], sectionLength * sizeof ( unsigned char ) );
+    Xp[3 * sectionLength] = '\0';
+    memcpy ( Yp, y, sectionLength * sizeof ( unsigned char ) );
+    memset ( Yp + sectionLength * sizeof ( unsigned char ), repeat_char, sectionLength * sizeof ( unsigned char ) );
+    memcpy ( Yp + 2 * sectionLength * sizeof ( unsigned char ), &y[ n - sectionLength ], sectionLength * sizeof ( unsigned char ) );
+    Yp[3 * sectionLength] = '\0';
+    
+    unsigned int i, j, r, rotation;
+    double max_score = -DBL_MAX;
+    double g = -5; //open gap penalty
+    double h = -0.5; //extend gap penalty
+
+    double * d0;
+    double * d1;
+    double * t0;
+    double * t1;
+    double * in;
+    if ( ( d0 = ( double * ) calloc ( sl3 + 1 , sizeof ( double ) ) ) == NULL )
+    {
+	fprintf ( stderr, " Error: 'd0' could not be allocated!\n");
+	return 0;
+    }
+    if ( ( d1 = ( double * ) calloc ( sl3 + 1 , sizeof ( double ) ) ) == NULL  )
+    {
+	fprintf ( stderr, " Error: 'd1' could not be allocated!\n");
+	return 0;
+    }
+    if ( ( t0 = ( double * ) calloc ( sl3 + 1 , sizeof ( double ) ) ) == NULL )
+    {
+	fprintf ( stderr, " Error: 't0' could not be allocated!\n");
+	return 0;
+    }
+    if ( ( t1 = ( double * ) calloc ( sl3 + 1 , sizeof ( double ) ) ) == NULL )
+    {
+	fprintf ( stderr, " Error: 't1' could not be allocated!\n");
+	return 0;
+    }
+    if ( ( in = ( double * ) calloc ( sl3 + 1 , sizeof ( double ) ) ) == NULL )
+    {
+	fprintf ( stderr, " Error: 'in' could not be allocated!\n");
+	return 0;
+    }
+
+    unsigned char * yr;
+    if ( ( yr = ( unsigned char * ) calloc ( ( sl3 + 1 ) , sizeof ( unsigned char ) ) ) == NULL )
+    {
+	fprintf( stderr, " Error: 'yr' could not be allocated!\n");
+	return 0;
+    }
+
+    for ( r = 0; r < sl3; r++ )
+    {
+        /*if ( r >= sectionLength && r <= 2 * sectionLength ) {
+	    continue;
+	}*/
+	
+	yr[0] = '\0';
+
+	create_rotation ( Yp, r, yr );
+	
+	if ( r == 0 )
+	  fprintf ( stderr, "Yr: %s, Xp: %s\n", yr, Xp );
+	
+	memset ( d0, 0, sizeof ( double ) * sl3 + 1 );
+	memset ( d1, 0, sizeof ( double ) * sl3 + 1 );
+	memset ( t0, 0, sizeof ( double ) * sl3 + 1 );
+	memset ( t1, 0, sizeof ( double ) * sl3 + 1 );
+	memset ( in, 0, sizeof ( double ) * sl3 + 1 );
+
+	for ( j = 0; j < sl3 + 1; j++ )
+	{
+	    d0[j] = -DBL_MAX;
+	    in[j] = -DBL_MAX;
+	}
+
+	t0[0] = 0;
+	t0[1] = g;
+	t1[0] = g; 
+
+	for ( j = 2; j < sl3 + 1; j++ ) {
+	    t0[j] = t0[j - 1] + h;
+	}
+	
+	for ( i = 1; i < sl3 + 1; i++ )
+	{
+	    for ( j = 0; j < sl3 + 1; j++ )
+	    {
+		double u, v, w;
+		
+		switch ( i % 2 ) 
+		{
+
+		  case 0:
+
+		    if ( j == 0 )
+		    {
+			d0[j] = -DBL_MAX;
+			in[j] = -DBL_MAX;
+			if ( i >= 2 ) {
+			    t0[0] = t1[0] + h;
+			}
+		    }
+		    else 
+		    {
+			d0[j] = max ( d1[j] + h, t1[j] + g );
+			u = d0[j];
+
+			in[j] = max ( in[j - 1] + h, t0[j - 1] + g ); //i0
+			v = in[j];
+
+			w = t1[j - 1] + delta ( yr[j - 1], Xp[i - 1], alphabet );
+
+			t0[j] = max ( w, max ( u, v ) );
+
+			if ( i == sl3 && j == sl3 && t0[sl3] > max_score )
+			{
+			    fprintf ( stderr, "Max score: %f rotation: %u\n", t0[j], r );
+			    max_score = t0[j];
+			    rotation  = r;
+			}
+		    }
+
+		    break;
+
+		  case 1:
+
+		    if ( j == 0 )
+		    {
+			d1[j] = -DBL_MAX;
+			in[j] = -DBL_MAX;
+			if ( i >= 2 ) {
+			    t1[0] = t0[0] + h;
+			}
+		    }	
+		    else 
+		    {
+			d1[j] = max ( d0[j] + h, t0[j] + g );
+			u = d1[j];
+
+			in[j] = max ( in[j - 1] + h, t1[j - 1] + g ); //i1
+			v = in[j];
+
+			w = t0[j - 1] + delta ( yr[j - 1], Xp[i - 1], alphabet );
+
+			t1[j] = max ( w, max ( u, v ) );
+
+			if ( i == sl3 && j == sl3 && t1[sl3] > max_score )
+			{
+			    fprintf ( stderr, "Max score: %f rotation: %u\n", t1[j], r );
+			    max_score = t1[j];
+			    rotation  = r;
+			}
+		    }
+
+		    break;
+
+		}
+
+	    }
+
+	}
+
+    }
+
+    free ( Xp );
+    free ( Yp );
+    free ( yr );
+    free( d0 );
+    free( d1 );
+    free( t0 );
+    free( t1 );
+    free( in );
+
+    return rotation;
  }

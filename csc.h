@@ -29,8 +29,8 @@
 #define ALPHABET_PROT           "PROT"
 #define ALPHABET_IUPAC          "IUPAC"
 #define DNA                     "ACGTN"                         //DNA alphabet
-#define PROT                    "ARNDCQEGHILKMFPSTWYV"          //Proteins alphabet
-#define IUPAC                   "ACGTUWSMKRYBDHVN"          	//IUPAC alphabet
+#define IUPAC                   "ACGTUWSMKRYBDHVN"          	//IUPAC nucleotide alphabet
+#define PROT                    "ARNDCQEGHILKMFPSTWYVX"         //Proteins alphabet
 
 struct TSwitch
 {
@@ -42,6 +42,7 @@ struct TSwitch
     unsigned int         L;                      // block length (max. optional)
     unsigned int         q;                      // q-gram size (min. required)
     unsigned int         Q;                      // q-gram size (max. optional)
+    double               P;                      // Percent Sequence to align at ends
 };
 
 struct TPOcc
@@ -50,9 +51,15 @@ struct TPOcc
     unsigned int         rot;
 };
 
+extern int EDNA[];
+extern int BLOSUM[];
+
 double gettime( void );
 int decode_switches ( int argc, char * argv [], struct TSwitch * sw );
 void usage ( void );
 void create_rotation ( unsigned char * x, unsigned int offset, unsigned char * rotation );
+void create_backward_rotation ( unsigned char * x, unsigned int offset, unsigned char * rotation );
+int refine ( unsigned char * x, unsigned int m, unsigned char * y, unsigned int n, double p, char * alphabet );
+double delta ( char a, char b, char * alphabet );
 
 #endif
