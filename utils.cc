@@ -239,6 +239,7 @@ void usage ( void )
                      "                                      program will try all in range min .. max.\n" );
    fprintf ( stdout, "  -P, --percent-refine      <float>   Refine the alignment of hCSC/saCSC by\n"
                      "                                      checking a percentage of the ends (e.g. 2.5)\n" );
+   fprintf ( stdout, "  -h, --help                <void>    This help message.\n");
  }
 
 double gettime( void )
