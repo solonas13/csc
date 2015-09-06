@@ -134,7 +134,7 @@ unsigned int circular_sequence_comparison (  unsigned char * x, unsigned char * 
 	int b = (int) ( m / sw . l );
 	int q = sw . q;
 
-	//fprintf(stderr, " %d %d.\n", b, q );
+	//fprintf(stderr, " %d %d.\n", b, q ); getchar();
 	int sigma = 0;
         INT mm = m + m - q + 1; 
         INT nn = n - q + 1; 
@@ -231,6 +231,7 @@ unsigned int circular_sequence_comparison (  unsigned char * x, unsigned char * 
 			D[i]++;
 		}
 	}	
+	//fprintf ( stderr, "D0 = %d\n", D[0] ); getchar();
 
 	/* Step 2: Compute the distances for position 0 */
 	int min_dist = 0;
@@ -250,7 +251,7 @@ unsigned int circular_sequence_comparison (  unsigned char * x, unsigned char * 
 		}
 		min_dist += D[i];
 	}
-	//fprintf ( stderr, "D0 = %d\n", min_dist );
+	//fprintf ( stderr, "D0 = %d\n", D[0] ); getchar();
 
 	/* Step 3: Compute the rest of the distances */
 	int rot = 0;
@@ -283,6 +284,7 @@ unsigned int circular_sequence_comparison (  unsigned char * x, unsigned char * 
 			}
 			dist += D[j];
 		}
+		//fprintf ( stderr, "dist = %d\n", dist );
 		if ( dist < min_dist )
 		{
 			rot = i;
