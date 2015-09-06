@@ -155,7 +155,7 @@ unsigned int circular_sequence_comparison (  unsigned char * x, unsigned char * 
         //fprintf(stderr, " SA[0]: %d.\n", SA[0] );
 
 	/* Loop through the LCP array to rank the rest q-grams in the suffix array */	
-	for ( INT i = 1; i <= mmn - q; i++ )
+	for ( INT i = 1; i < mmn; i++ )
 	{
 		INT lcp = LCP[i];
 		INT ii = SA[i];
