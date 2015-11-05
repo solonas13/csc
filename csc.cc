@@ -268,7 +268,7 @@ int main(int argc, char **argv)
 			  
 				if ( strcmp ( method, METHOD_SA ) == 0 )
 				{
-				        swTemp . l = (unsigned int) ( m / l ); //use block number instead of length for saCSC				  
+				        //swTemp . l = (unsigned int) ( m / l ); //use block number instead of length for saCSC				  
 					circular_sequence_comparison ( seq[0], seq[1], swTemp, &rotation, &distance );
 					DTemp . err = distance;
 					DTemp . rot = rotation;

@@ -10,6 +10,4 @@ To compile CSC, please follow the instructions given in file INSTALL.
 
 When publishing work that is based on the results from CSC please cite:
 
-R. Grossi, C. S. Iliopoulos, R. Mercas, N. Pisanti, S. P. Pissis, A. Retha, and F. Vayiani, 
-"Circular Sequence Comparison with q-grams", 2015. (submitted)
-
+Roberto Grossi, Costas S. Iliopoulos, Robert Mercas, Nadia Pisanti, Solon P. Pissis, Ahmad Retha, Fatima Vayani: Circular Sequence Comparison with q-grams. WABI 2015: 203-216.
