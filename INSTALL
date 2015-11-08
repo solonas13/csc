@@ -20,4 +20,4 @@ program for 64-bit integers. This requires double the amount of memory.
 After compilation the binary `csc' will be created in the working 
 directory, e.g. you may call it from this directory via
 
- S ./csc -a DNA -m saCSC -i ./data/2.fasta -o 2.fasta.out -q 5 -b 10
+ S ./csc -a DNA -m saCSC -i ./data/2.fasta -o 2.fasta.out -q 5 -l 10
