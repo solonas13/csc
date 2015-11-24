@@ -49,22 +49,19 @@ void init_substitution_score_tables ()
 }
  
 double delta ( char a, char b, char * alphabet )
- {
+{
     /*if ( a == DEL && b == DEL ) {
-	return ( double ) 10;
-    } else if ( a == b ) {
-	return ( double ) 5;
-    } else {
-	return (double) -4;
-    }*/
-      
-    if ( a == DEL && b == DEL ) {
 	return ( double ) 10;
     }
     else if ( ( a == DEL && b != DEL ) || ( b == DEL && a != DEL ) ) {
 	return (double) -10;
+    }*/
+
+    if ( a == DEL || b == DEL ) {
+	a = 'A';
+	b = 'A';
     }
-   
+
     if ( strcmp ( alphabet, ALPHABET_PROT ) == 0 )
     {
 	return ( double ) EBLOSUM62_matrix[ BLOSUM[(int)a] ][ BLOSUM[(int)b] ];
@@ -74,10 +71,10 @@ double delta ( char a, char b, char * alphabet )
 	return ( double ) EDNAFULL_matrix[ EDNA[(int)a] ][ EDNA[(int)b] ];
     }
     
- }
+}
 
 static struct option long_options[] =
- {
+{
    { "method",                  required_argument, NULL, 'm' },
    { "alphabet",                required_argument, NULL, 'a' },
    { "input-file",              required_argument, NULL, 'i' },
@@ -89,14 +86,14 @@ static struct option long_options[] =
    { "percent-refine",          optional_argument, NULL, 'P' },
    { "help",                    no_argument,       NULL, 'h' },
    { NULL,                      0,                 NULL, 0   }
- };
+};
 
 
 /* 
 Decode the input switches 
 */
 int decode_switches ( int argc, char * argv [], struct TSwitch * sw )
- {
+{
    int          oi;
    int          opt;
    double       val;
@@ -211,14 +208,14 @@ int decode_switches ( int argc, char * argv [], struct TSwitch * sw )
      }
    else
      return ( optind );
- }
+}
 
 
 /* 
 Usage of the tool 
 */
 void usage ( void )
- {
+{
    fprintf ( stdout, " Usage: csc <options>\n" );
    fprintf ( stdout, " Standard (Mandatory):\n" );
    fprintf ( stdout, "  -m, --method              <str>     `hCSC' for heuristic, `nCSC' for naive\n"
@@ -237,33 +234,33 @@ void usage ( void )
    fprintf ( stdout, "  -P, --percent-refine      <float>   Refine the alignment of hCSC/saCSC by\n"
                      "                                      checking a percentage of the ends (e.g. 2.5)\n" );
    fprintf ( stdout, "  -h, --help                <void>    This help message.\n");
- }
+}
 
 double gettime( void )
- {
+{
     struct timeval ttime;
     gettimeofday( &ttime , 0 );
     return ttime.tv_sec + ttime.tv_usec * 0.000001;
- }
+}
 
 void create_rotation ( unsigned char * x, unsigned int offset, unsigned char * rotation )
- {
+{
     unsigned int m = strlen ( ( char * ) x );
     memmove ( &rotation[0], &x[offset], m - offset );
     memmove ( &rotation[m - offset], &x[0], offset );
     rotation[m] = '\0';
- }
+}
 
 void create_backward_rotation ( unsigned char * x, unsigned int offset, unsigned char * rotation )
- {
+{
     unsigned int m = strlen ( ( char * ) x );
     memmove ( &rotation[0], &x[m - offset], offset );
     memmove ( &rotation[offset], &x[0], m - offset );
     rotation[m] = '\0';
- }
+}
 
 int refine ( unsigned char * x, unsigned int m, unsigned char * y, unsigned int n, double p, char * alphabet )
- {
+{
     init_substitution_score_tables();
 
     //create X and Y prine (Xp, Yp)
@@ -452,4 +449,4 @@ int refine ( unsigned char * x, unsigned int m, unsigned char * y, unsigned int 
     free( in );
 
     return rotation;
- }
+}
