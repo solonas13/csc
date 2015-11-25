@@ -42,6 +42,7 @@ void init_substitution_score_tables ()
     for ( i = 0; i < 15; i ++ ) {
 	EDNA[(int)edna[i]] = i;
     }
+    EDNA[(int)'U'] = 1; //Setting RNA U=T
     char blosum[] = "ARNDCQEGHILKMFPSTWYVBZX*";
     for ( i = 0; i < 24; i ++ ) {
 	BLOSUM[(int)blosum[i]] = i;
@@ -50,17 +51,17 @@ void init_substitution_score_tables ()
  
 double delta ( char a, char b, char * alphabet )
 {
-    /*if ( a == DEL && b == DEL ) {
-	return ( double ) 10;
+    if ( a == DEL && b == DEL ) {
+	return 10.0;
     }
     else if ( ( a == DEL && b != DEL ) || ( b == DEL && a != DEL ) ) {
-	return (double) -10;
-    }*/
+	return -10.0;
+    }
 
-    if ( a == DEL || b == DEL ) {
+    /*if ( a == DEL || b == DEL ) {
 	a = 'A';
 	b = 'A';
-    }
+    }*/
 
     if ( strcmp ( alphabet, ALPHABET_PROT ) == 0 )
     {
@@ -220,7 +221,7 @@ void usage ( void )
    fprintf ( stdout, " Standard (Mandatory):\n" );
    fprintf ( stdout, "  -m, --method              <str>     `hCSC' for heuristic, `nCSC' for naive\n"
                      "                                      and `saCSC' for suffix-array algorithm. \n" );
-   fprintf ( stdout, "  -a, --alphabet            <str>     `DNA' for nucleotide  sequences or `PROT'\n"
+   fprintf ( stdout, "  -a, --alphabet            <str>     `DNA' or `RNA' for nucleotide sequences or `PROT'\n"
                      "                                      for protein  sequences. \n" );
    fprintf ( stdout, "  -i, --input-file          <str>     (Multi)FASTA input filename.\n" );
    fprintf ( stdout, "  -o, --output-file         <str>     Output filename for the rotated sequences.\n" );
@@ -281,16 +282,17 @@ int refine ( unsigned char * x, unsigned int m, unsigned char * y, unsigned int 
     memcpy ( Xp, x, sectionLength * sizeof ( unsigned char ) );
     memset ( Xp + sectionLength * sizeof ( unsigned char ), repeat_char, sectionLength * sizeof ( unsigned char ) );
     memcpy ( Xp + 2 * sectionLength * sizeof ( unsigned char ), &x[ m - sectionLength ], sectionLength * sizeof ( unsigned char ) );
-    Xp[3 * sectionLength] = '\0';
+    Xp[sl3] = '\0';
     memcpy ( Yp, y, sectionLength * sizeof ( unsigned char ) );
     memset ( Yp + sectionLength * sizeof ( unsigned char ), repeat_char, sectionLength * sizeof ( unsigned char ) );
     memcpy ( Yp + 2 * sectionLength * sizeof ( unsigned char ), &y[ n - sectionLength ], sectionLength * sizeof ( unsigned char ) );
-    Yp[3 * sectionLength] = '\0';
+    Yp[sl3] = '\0';
     
-    unsigned int i, j, r, rotation;
+    unsigned int i, j, r;
+    int rotation;
     double max_score = -DBL_MAX;
-    double g = -5; //open gap penalty
-    double h = -0.5; //extend gap penalty
+    double g = -10.0; //open gap penalty
+    double h = -1.0; //extend gap penalty
 
     double * d0;
     double * d1;
@@ -332,9 +334,9 @@ int refine ( unsigned char * x, unsigned int m, unsigned char * y, unsigned int 
 
     for ( r = 0; r < sl3; r++ )
     {
-        if ( r >= sectionLength && r < 2 * sectionLength ) {
-	    continue;
-	}
+        //if ( r >= sectionLength && r < 2 * sectionLength ) {
+	//    continue;
+	//}
 
 	yr[0] = '\0';
 
@@ -360,11 +362,13 @@ int refine ( unsigned char * x, unsigned int m, unsigned char * y, unsigned int 
 	    t0[j] = t0[j - 1] + h;
 	}
 
+	double u, v, w;
+
 	for ( i = 1; i < sl3 + 1; i++ )
 	{
+
 	    for ( j = 0; j < sl3 + 1; j++ )
 	    {
-		double u, v, w;
 
 		switch ( i % 2 ) 
 		{

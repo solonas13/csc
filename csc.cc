@@ -66,10 +66,11 @@ int main(int argc, char **argv)
                 }
 
                 if      ( ! strcmp ( "DNA", sw . alphabet ) )   alphabet = ( char * ) DNA;
+		else if ( ! strcmp ( "RNA", sw . alphabet ) )  alphabet = ( char * ) RNA;
                 else if ( ! strcmp ( "PROT", sw . alphabet ) )  alphabet = ( char * ) PROT;
                 else
                 {
-                        fprintf ( stderr, " Error: alphabet argument a should be `DNA' for nucleotide sequences or `PROT' for protein sequences or `USR' for sequences over a user-defined alphabet!\n" );
+                        fprintf ( stderr, " Error: alphabet argument a should be `DNA' or 'RNA' for nucleotide sequences or `PROT' for protein sequences!\n" );
                         return ( 1 );
                 }
 

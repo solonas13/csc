@@ -26,9 +26,11 @@
 #define METHOD_N                "nCSC"
 #define METHOD_SA               "saCSC"
 #define ALPHABET_DNA            "DNA"
+#define ALPHABET_RNA            "RNA"
 #define ALPHABET_PROT           "PROT"
 #define ALPHABET_IUPAC          "IUPAC"
 #define DNA                     "ACGTN"                         //DNA alphabet
+#define RNA                     "ACGUN"                         //RNA alphabet
 #define IUPAC                   "ACGTUWSMKRYBDHVN"          	//IUPAC nucleotide alphabet
 #define PROT                    "ARNDCQEGHILKMFPSTWYVX"         //Proteins alphabet
 
