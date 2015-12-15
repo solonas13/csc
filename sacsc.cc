@@ -261,6 +261,7 @@ unsigned int circular_sequence_comparison (  unsigned char * x, unsigned char * 
 		for ( INT j = 0; j < b; j++ )
 		{
 			diff[j][xp[i - 1 + xind[j]]]++; //letter out
+			diff[j][xp[i - 1 + xind[j] + xmf[j]]]--; //letter in
 
 			//For the letter we take out
 			if ( diff[j][xp[i - 1 + xind[j]]] <= 0 )	
@@ -271,8 +272,6 @@ unsigned int circular_sequence_comparison (  unsigned char * x, unsigned char * 
 			{
 				D[j]++;
 			}
-
-			diff[j][xp[i - 1 + xind[j] + xmf[j]]]--; //letter in
 
 			//For the letter we add in
 			if ( diff[j][xp[i - 1 + xind[j] + xmf[j]]] < 0 )	

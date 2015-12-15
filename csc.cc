@@ -40,14 +40,14 @@ int main(int argc, char **argv)
         unsigned char ** seq    = NULL;          // the sequence in memory
         unsigned char ** seq_id = NULL;          // the sequence id in memory
 	char *           alphabet;               // the alphabet
-	unsigned int     l, L, q, Q;             // the program parameters
+	unsigned int     l, q;                   // the program parameters
 	double           P;                      // the program parameters
 	
 	unsigned int     h, i, j, k;
 
 	/* Decodes the arguments */
         i = decode_switches ( argc, argv, &sw );
-
+	
 	/* Check the arguments */
         if ( i < 10 )
         {
@@ -65,32 +65,24 @@ int main(int argc, char **argv)
                         return ( 1 );
                 }
 
-                if      ( ! strcmp ( "DNA", sw . alphabet ) )   alphabet = ( char * ) DNA;
-		else if ( ! strcmp ( "RNA", sw . alphabet ) )  alphabet = ( char * ) RNA;
-                else if ( ! strcmp ( "PROT", sw . alphabet ) )  alphabet = ( char * ) PROT;
+                if      ( ! strcmp ( ALPHABET_DNA, sw . alphabet ) )   alphabet = ( char * ) DNA;
+                else if ( ! strcmp ( ALPHABET_RNA, sw . alphabet ) )   alphabet = ( char * ) RNA;
+                else if ( ! strcmp ( ALPHABET_PROT, sw . alphabet ) )  alphabet = ( char * ) PROT;
                 else
                 {
                         fprintf ( stderr, " Error: alphabet argument a should be `DNA' or 'RNA' for nucleotide sequences or `PROT' for protein sequences!\n" );
                         return ( 1 );
                 }
 
-                if      ( sw . L < sw . l || sw . Q < sw . q )
+                if      ( sw . P < 0 )
                 {
-                        fprintf ( stderr, " Error: The optional maxmimum parameters cannot be less than the mandatory parameters!\n" );
-                        return ( 1 );
-                }
-
-                if      ( sw . P < 0 || sw . P >= 50.0 )
-                {
-                        fprintf ( stderr, " Error: The optional percentage flag should be in the range of 0 to 50%%.\n" );
+                        fprintf ( stderr, " Error: The optional P flag for refinement is too low.\n" );
                         return ( 1 );
                 }
 
                 q       = sw . q;
-                Q       = sw . Q;
                 l       = sw . l;
-                L       = sw . L;
-		P       = sw . P;
+                P       = sw . P;
 
                 input_filename          = sw . input_filename;
                 output_filename         = sw . output_filename;
@@ -208,15 +200,21 @@ int main(int argc, char **argv)
 	unsigned int m = strlen ( ( char * ) seq[0] );
 	unsigned int n = strlen ( ( char * ) seq[1] );
 
-	if ( sw . L < 1 || sw . L > m - sw . q + 1  || sw . L > n - sw . q + 1 )
+	if ( sw . l < 1 || sw . l > m - sw . q + 1  || sw . l > n - sw . q + 1 )
 	{
         	fprintf( stderr, " Error: Illegal block length.\n" );
 		return ( 1 );
 	}
 
-	if ( sw . Q >= sw . l )
+	if ( sw . q >= sw . l )
 	{
         	fprintf( stderr, " Error: Illegal q-gram length.\n" );
+		return ( 1 );
+	}
+
+	if ( sw . P >= m / sw . l )
+	{
+		fprintf( stderr, " Error: Illegal P refine number of blocks.\n" );
 		return ( 1 );
 	}
 
@@ -226,6 +224,10 @@ int main(int argc, char **argv)
         	fprintf( stderr, " Warning: Only the first two (%s, %s) will be processed!\n", seq_id[0], seq_id[1] );
 	}
 
+	unsigned int distance = m + n;
+	unsigned int rotation = 0;
+	TPOcc D;
+	D . err = UINT_MAX;
 
 	/* Run the algorithm using the user's chosen method - Naive method does not go through repeats */
 	string xx ( ( char * ) seq[0] );
@@ -236,6 +238,10 @@ int main(int argc, char **argv)
 	{
 		alphabetLetters = DNA;
 	}
+	else if ( strcmp ( sw. alphabet, ALPHABET_RNA ) == 0 )
+	{
+		alphabetLetters = RNA;
+	}
 	else if ( strcmp ( sw. alphabet, ALPHABET_PROT ) == 0 )
 	{
 		alphabetLetters = PROT;
@@ -244,13 +250,7 @@ int main(int argc, char **argv)
 	{
 		alphabetLetters = IUPAC;
 	}
-	unsigned int distance = m + n;
-	unsigned int rotation = 0;
-	TPOcc D, DTemp;
-	D . err = UINT_MAX;
 	struct BestMatch bm;
-	struct TSwitch swTemp;
-	memcpy ( &swTemp, &sw, sizeof ( TSwitch ) );
 
 	if ( strcmp ( method, METHOD_N ) == 0 )
 	{
@@ -259,39 +259,27 @@ int main(int argc, char **argv)
 		D . err = bm . score;
 		D . rot = bm . pos;
 	}
+	else if ( strcmp ( method, METHOD_H ) == 0 )
+	{
+		hCSC hcsc ( xx, 2 * m, y, n, sw . q, sw . l, alphabetLetters );
+		hcsc . run ( &bm );
+		D . err = bm . score;
+		D . rot = bm . pos;
+	}
 	else
 	{
-		unsigned int q, l;
-		for ( q = sw . q ; q <= sw . Q; q ++ ) {
-			for ( l = sw . l ; l <= sw . L; l ++ ) {
-				swTemp . q = q;
-				swTemp . l = l;
-			  
-				if ( strcmp ( method, METHOD_SA ) == 0 )
-				{
-				        //swTemp . l = (unsigned int) ( m / l ); //use block number instead of length for saCSC				  
-					circular_sequence_comparison ( seq[0], seq[1], swTemp, &rotation, &distance );
-					DTemp . err = distance;
-					DTemp . rot = rotation;
-				} else {
-					hCSC hcsc ( xx, 2 * m, y, n, sw . q, sw . l, alphabetLetters );
-					hcsc . run ( &bm );
-					DTemp . err = bm . score;
-					DTemp . rot = bm . pos;
-				}
-
-				//store best combination
-				if ( DTemp . err < D . err ) {
-				    D . err = DTemp . err;
-				    D . rot = DTemp . rot;
-				    sw . q = q;
-				    sw . l = l;
-				}
-			}
+		if ( sw . P > 0 )
+		{
+			sacsc_refinement ( seq[0], seq[1], sw, &rotation, &distance );
 		}
+		else
+		{
+			circular_sequence_comparison ( seq[0], seq[1], sw, &rotation, &distance );
+		}
+		D . rot = rotation;
+		D . err = distance;
 	}
 
-	
 	#if 0
 	for ( int i = 0; i < num_seqs; i++ )
 	{
@@ -315,12 +303,6 @@ int main(int argc, char **argv)
 	}
 	#endif
 
-	if ( ! ( out_fd = fopen ( output_filename, "w") ) )
-	{
-		fprintf ( stderr, " Error: Cannot open file %s!\n", output_filename );
-		return ( 1 );
-	}
-
 	unsigned char * rot_str;
 	if ( ( rot_str = ( unsigned char * ) calloc ( m + 1, sizeof ( unsigned char ) ) ) == NULL )
 	{
@@ -328,37 +310,20 @@ int main(int argc, char **argv)
 		return ( 1 );
 	}
 
-	if ( strcmp ( method, METHOD_N ) == 0 || sw . P == 0 )
-	{
-		create_rotation ( seq[0], D . rot, rot_str );
-	}
-	//refine the result if P is defined for method hCSC or saCSC
-	else if ( sw . P > 0 && strcmp ( method, METHOD_H ) == 0 || strcmp ( method, METHOD_SA ) == 0 )
-	{
-		create_rotation ( seq[0], D . rot, rot_str );
-		memcpy ( seq[0], rot_str, m * sizeof ( unsigned char ) );
-		rot_str[0] = '\0';
-		int refinement = refine ( seq[0], m, seq[1], n, sw . P, sw . alphabet );
-
-		if ( refinement >= 0 ) {
-		    create_rotation ( seq[0], refinement, rot_str );
-		} else {
-		    create_backward_rotation ( seq[0], -refinement, rot_str );
-		}
-
-		D . rot = (unsigned int) (int)D . rot + refinement;
-	}
-
+	create_rotation ( seq[0], D . rot, rot_str );
 
 	double end = gettime();
 
-
+	if ( ! ( out_fd = fopen ( output_filename, "w") ) )
+	{
+		fprintf ( stderr, " Error: Cannot open file %s!\n", output_filename );
+		return ( 1 );
+	}
 	fprintf( out_fd, ">%s\n", seq_id[0] );
 	fprintf( out_fd, "%s\n", rot_str );
 	free ( rot_str );
 	fprintf( out_fd, ">%s\n", seq_id[1] );
 	fprintf( out_fd, "%s\n", seq[1] );
-
 
 	if ( fclose ( out_fd ) )
 	{
@@ -388,6 +353,7 @@ int main(int argc, char **argv)
         free ( sw . input_filename );
         free ( sw . output_filename );
         free ( sw . alphabet );
+        free ( sw . method );
 
 	return ( 0 );
 }

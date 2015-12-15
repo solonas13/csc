@@ -256,9 +256,9 @@ public:
 	this->n = n;
 	
 	//initialise the chars array - faster than hashmap look-up but takes up a little bit more memory
-	if ((this->chars = (WORD *) calloc(CHAR_MAX, sizeof(WORD))) == NULL) {
-	    cerr << "Could not allocate the chars map." << endl;
-	}
+	//if ((this->chars = (WORD *) calloc(CHAR_MAX, sizeof(WORD))) == NULL) {
+	//    cerr << "Could not allocate the chars map." << endl;
+	//}
 
 	//sigma holds the size of the alphabet, chars the characters
 	if (a.length() == 0) {

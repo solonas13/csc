@@ -8,7 +8,7 @@ LFLAGS= -std=c++11 -DNDEBUG -I ./libsdsl/include/ -L ./libsdsl/lib/ -lsdsl -ldiv
  
 EXE=    csc
  
-SRC=    csc.cc hcsc.cc ncsc.cc utils.cc sacsc.cc
+SRC=    csc.cc hcsc.cc ncsc.cc utils.cc sacsc.cc sacsc-r.cc
  
 HD=     csc.h qcsc.h hcsc.h ncsc.h sacsc.h Makefile.32-bit.gcc
  

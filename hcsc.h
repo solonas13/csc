@@ -32,7 +32,6 @@ private:
 
 public:
     hCSC(string xx, unsigned int m, string y, unsigned int n, unsigned int q, unsigned int b, string a) : qCSC(xx, m, y, n, q, b, a){}
-    
     int run(struct BestMatch * best);
 };
 

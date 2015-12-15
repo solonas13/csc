@@ -34,17 +34,18 @@
 #define IUPAC                   "ACGTUWSMKRYBDHVN"          	//IUPAC nucleotide alphabet
 #define PROT                    "ARNDCQEGHILKMFPSTWYVX"         //Proteins alphabet
 
+#define cscmax(a,b) ((a) > (b)) ? (a) : (b)
+#define cscmin(a,b) ((a) < (b)) ? (a) : (b)
+
 struct TSwitch
 {
     char *               input_filename;         // the input file name
     char *               output_filename;        // the output file name
     char *               alphabet;               // the output file name
     char *               method;                 // algorithm/method
-    unsigned int         l;                      // block length (min. required)
-    unsigned int         L;                      // block length (max. optional)
-    unsigned int         q;                      // q-gram size (min. required)
-    unsigned int         Q;                      // q-gram size (max. optional)
-    double               P;                      // Percent Sequence to align at ends
+    unsigned int         l;                      // block length
+    unsigned int         q;                      // q-gram size
+    double               P;                      // (optional) number of blocks to refine by
 };
 
 struct TPOcc
