@@ -46,6 +46,8 @@ struct TSwitch
     unsigned int         l;                      // block length
     unsigned int         q;                      // q-gram size
     double               P;                      // (optional) number of blocks to refine by
+    double               O;
+    double               E;
 };
 
 struct TPOcc

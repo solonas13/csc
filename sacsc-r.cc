@@ -176,7 +176,6 @@ unsigned int sacsc_refinement (  unsigned char * x, unsigned char * y, struct TS
 	unsigned int rot;
 	unsigned int dist;
 	circular_sequence_comparison ( x, y, sw, &rot, &dist );
-	//fprintf ( stderr, "rot:%d\n", rot);
 
 	( * distance ) = dist;
 
@@ -191,7 +190,6 @@ unsigned int sacsc_refinement (  unsigned char * x, unsigned char * y, struct TS
 
 	unsigned int sl = sw . P * ( sw . l ); //section length
 	sl = cscmin ( sl, cscmin ( m/2, n/2 ) );
-	//fprintf ( stderr, "sl: %d\n", sl);
 
 	X = ( unsigned char * ) calloc( ( 3 * sl + 1 ) , sizeof( unsigned char ) );
 	Y = ( unsigned char * ) calloc( ( 3 * sl + 1 ) , sizeof( unsigned char ) );
@@ -209,11 +207,6 @@ unsigned int sacsc_refinement (  unsigned char * x, unsigned char * y, struct TS
 	memcpy ( &Y[sl + sl], &y[n - sl], sl );
 	Y[3 * sl] = '\0';
 
-	//fprintf ( stderr, "X: %s\n", X);
-	//fprintf ( stderr, "Y: %s\n", Y); 
-
-	double O = -10;
-	double E = -0.5;
 	unsigned int mm = sl + sl + sl;
 	unsigned int nn = sl + sl + sl;
 
@@ -229,8 +222,7 @@ unsigned int sacsc_refinement (  unsigned char * x, unsigned char * y, struct TS
 		Xr[0] = '\0';
 		create_rotation ( X, i, Xr );
 
-		nw ( Xr, mm , Y, nn, O, E, &score, sw . alphabet );	
-		//fprintf ( stderr, "Score: %lf\n", score );
+		nw ( Xr, mm , Y, nn, sw . O, sw . E, &score, sw . alphabet );	
 		if ( score > max_score )
 		{
 			max_score = score;
@@ -238,7 +230,6 @@ unsigned int sacsc_refinement (  unsigned char * x, unsigned char * y, struct TS
 		}	 
 	}
 	free ( Xr);
-	//fprintf ( stderr, "RRot: %d\n", rrot );
 
 	if ( rrot < sl )
 	{
@@ -249,7 +240,6 @@ unsigned int sacsc_refinement (  unsigned char * x, unsigned char * y, struct TS
 		( * rotation ) = rot - ( 3 * sl - rrot );
 	}
 	( * rotation ) = ( * rotation ) % m;
-	//fprintf ( stderr, "Rot: %d\n", ( * rotation) );
 
 	free ( xr );
 	free ( X );

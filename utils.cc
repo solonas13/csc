@@ -38,6 +38,8 @@ static struct option long_options[] =
    { "q-length",                required_argument, NULL, 'q' },
    { "block-length",            required_argument, NULL, 'l' },
    { "blocks-refine",           optional_argument, NULL, 'P' },
+   { "gap-open-penalty",        optional_argument, NULL, 'O' },
+   { "gap-extend-penalty",      optional_argument, NULL, 'E' },
    { "help",                    no_argument,       NULL, 'h' },
    { NULL,                      0,                 NULL, 0   }
 };
@@ -62,9 +64,11 @@ int decode_switches ( int argc, char * argv [], struct TSwitch * sw )
    sw -> q                              = 5;
    sw -> l                              = 10;
    sw -> P                              = 0.0;
+   sw -> O                              = -10.0;
+   sw -> E                              = -0.5;
    args = 0;
 
-   while ( ( opt = getopt_long ( argc, argv, "m:a:i:o:q:l:P:h", long_options, &oi ) ) != - 1 )
+   while ( ( opt = getopt_long ( argc, argv, "m:a:i:o:q:l:P:O:Eh", long_options, &oi ) ) != - 1 )
     {
       switch ( opt )
        {
@@ -121,6 +125,24 @@ int decode_switches ( int argc, char * argv [], struct TSwitch * sw )
            sw -> P = val;
            break;
 
+         case 'O':
+           val = (double) atof ( optarg );
+           if ( optarg == ep )
+            {
+              return ( 0 );
+            }
+           sw -> O = val;
+           break;
+
+         case 'E':
+           val = (double) atof ( optarg );
+           if ( optarg == ep )
+            {
+              return ( 0 );
+            }
+           sw -> E = val;
+           break;
+
          case 'h':
            return ( 0 );
        }
@@ -154,6 +176,20 @@ void usage ( void )
    fprintf ( stdout, " Extra (Optional and only to be used with saCSC):\n" );
    fprintf ( stdout, "  -P, --blocks-refine       <float>   The number of blocks of length l to use to\n"
                      "                                      refine the results of saCSC by (e.g. 1.0)\n" );
+   fprintf ( stdout, "  -O, --gap-open-penalty    <float>   The gap open penalty is the score taken\n"
+                     "                                      away when a gap is created. The best\n"
+                     "                                      value depends on the choice of comparison\n"
+                     "                                      matrix.   The   default   value   assumes\n"
+                     "                                      you  are  using  the  EBLOSUM62  matrix\n"
+                     "                                      for protein sequences, and the  EDNAFULL\n"
+                     "                                      matrix for nucleotide sequences. Floating\n"
+                     "                                      point number from 1.0 to 100.0. (default:\n"
+                     "                                      10.0)\n" );
+   fprintf ( stdout, "  -E, --gap-extend-penalty  <float>   The gap extension penalty is added to\n"
+                     "                                      the standard gap penalty for each base or\n"
+                     "                                      residue in the gap. This is how long gaps\n"
+                     "                                      are penalized. Floating point number from\n"
+                     "                                      0.0  to  10.0.  (default:  0.5)\n" );
    fprintf ( stdout, " Other:\n" );
    fprintf ( stdout, "  -h, --help                <void>    This help message.\n");
 }
