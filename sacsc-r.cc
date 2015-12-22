@@ -214,6 +214,8 @@ unsigned int sacsc_refinement (  unsigned char * x, unsigned char * y, struct TS
 	double max_score = score;
 	unsigned int rrot = 0;
 	unsigned char * Xr = ( unsigned char * ) calloc( ( 3 * sl + 1 ) , sizeof( unsigned char ) );
+	double O = - sw . O;
+	double E = - sw . E;
 	for ( int i = 0; i < mm; i++ )
 	{
 		if ( i >= sl && i < 2 * sl )
@@ -222,7 +224,7 @@ unsigned int sacsc_refinement (  unsigned char * x, unsigned char * y, struct TS
 		Xr[0] = '\0';
 		create_rotation ( X, i, Xr );
 
-		nw ( Xr, mm , Y, nn, sw . O, sw . E, &score, sw . alphabet );	
+		nw ( Xr, mm , Y, nn, O, E, &score, sw . alphabet );	
 		if ( score > max_score )
 		{
 			max_score = score;
