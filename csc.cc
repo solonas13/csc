@@ -84,6 +84,24 @@ int main(int argc, char **argv)
                 l       = sw . l;
                 P       = sw . P;
 
+                if      ( P < 0 )
+                {
+                        fprintf ( stderr, " Error: The optional P flag for refinement is too low.\n" );
+                        return ( 1 );
+                }
+
+                if      ( q < 0 )
+                {
+                        fprintf ( stderr, " Error: The q-gram size is too low.\n" );
+                        return ( 1 );
+                }
+
+                if      ( l < 0 )
+                {
+                        fprintf ( stderr, " Error: The block length l is too low.\n" );
+                        return ( 1 );
+                }
+
                 input_filename          = sw . input_filename;
                 output_filename         = sw . output_filename;
         }
@@ -212,7 +230,7 @@ int main(int argc, char **argv)
 		return ( 1 );
 	}
 
-	if ( sw . P >= m / sw . l )
+	if ( sw . P >= ( m / sw . l ) / 2 )
 	{
 		fprintf( stderr, " Error: Illegal P refine number of blocks.\n" );
 		return ( 1 );
