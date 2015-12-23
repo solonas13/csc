@@ -68,7 +68,7 @@ int decode_switches ( int argc, char * argv [], struct TSwitch * sw )
    sw -> E                              = 0.5;
    args = 0;
 
-   while ( ( opt = getopt_long ( argc, argv, "m:a:i:o:q:l:P:O:Eh", long_options, &oi ) ) != - 1 )
+   while ( ( opt = getopt_long ( argc, argv, "m:a:i:o:q:l:P:O:E:h", long_options, &oi ) ) != - 1 )
     {
       switch ( opt )
        {
