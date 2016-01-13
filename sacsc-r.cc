@@ -233,15 +233,26 @@ unsigned int sacsc_refinement (  unsigned char * x, unsigned char * y, struct TS
 	}
 	free ( Xr);
 
+	int final_rot;
 	if ( rrot < sl )
 	{
-		( * rotation ) = rot + rrot;
+		final_rot = rot + rrot;
 	}
 	else
 	{
-		( * rotation ) = rot - ( 3 * sl - rrot );
+		final_rot = rot - ( 3 * sl - rrot );
 	}
-	( * rotation ) = ( * rotation ) % m;
+
+	if ( final_rot > ( int ) m )
+	{
+		( * rotation ) = final_rot % m;	
+	}
+	else if ( final_rot < 0 )
+	{
+		( * rotation ) = m + final_rot;
+	}
+	else
+		( * rotation ) = final_rot;
 
 	free ( xr );
 	free ( X );
