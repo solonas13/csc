@@ -5,3 +5,6 @@ in.fasta
 out.fasta
 libsdsl
 sdsl-lite
+EcoliK12*
+linebreak.txt
+rotateAt10000.py

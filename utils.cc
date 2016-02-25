@@ -131,7 +131,7 @@ int decode_switches ( int argc, char * argv [], struct TSwitch * sw )
             {
               return ( 0 );
             }
-           sw -> O = val;
+           sw -> O = abs ( val );
            break;
 
          case 'E':
@@ -140,7 +140,7 @@ int decode_switches ( int argc, char * argv [], struct TSwitch * sw )
             {
               return ( 0 );
             }
-           sw -> E = val;
+           sw -> E = abs ( val );
            break;
 
          case 'h':

@@ -232,7 +232,7 @@ unsigned int circular_sequence_comparison (  unsigned char * x, unsigned char * 
 		}
 	}	
 	//fprintf ( stderr, "D0 = %d\n", D[0] ); getchar();
-
+	
 	/* Step 2: Compute the distances for position 0 */
 	int min_dist = 0;
 	for ( INT i = 0; i < b; i++ )	//first window
@@ -252,7 +252,7 @@ unsigned int circular_sequence_comparison (  unsigned char * x, unsigned char * 
 		min_dist += D[i];
 	}
 	//fprintf ( stderr, "D0 = %d\n", D[0] ); getchar();
-
+	
 	/* Step 3: Compute the rest of the distances */
 	int rot = 0;
 	for ( INT i = 1; i < m; i++ )	//all the rest windows
